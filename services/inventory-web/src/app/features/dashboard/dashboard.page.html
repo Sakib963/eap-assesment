@@ -1,35 +1,62 @@
-<main class="min-h-screen px-5 py-10 md:px-8 md:py-14">
-  <section class="hero-panel mx-auto max-w-4xl rounded-3xl border border-[#DDDFDF] bg-[#FCFCFC]/95 p-7 shadow-[0_18px_45px_rgba(24,31,28,0.14)] md:p-10">
-    <p class="mb-4 inline-flex items-center rounded-full border border-[#8D9EC6]/40 bg-[#EDE6F2] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#00241B]">
-      Platform Skeleton
-    </p>
-
-    <h1 class="text-4xl font-extrabold leading-tight text-[#181F1C] md:text-5xl">{{ title() }}</h1>
-
-    <p class="mt-4 max-w-2xl text-base leading-relaxed text-[#00241B]/75 md:text-lg">
-      Reusable architecture is now active: feature-based routes, centralized API client, HTTP error interceptor, and backend platform middleware.
-    </p>
-
-    <div class="mt-6 flex flex-wrap items-center gap-3">
-      <button nz-button nzType="primary" nzSize="large" (click)="refreshHealth()">Refresh Health</button>
-      <button nz-button nzType="default" nzSize="large" (click)="logout()">Logout</button>
-      <nz-tag [nzColor]="'#EDE6F2'" class="!text-[#00241B] !border !border-[#8D9EC6]">Reusable Skeleton Ready</nz-tag>
+<section class="grid gap-5">
+  <nz-card class="hero-panel" [nzBordered]="false">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="inline-flex rounded-full border border-[#8D9EC6]/40 bg-[#EDE6F2] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#244046]">
+          Operations Overview
+        </p>
+        <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-[#181F1C] md:text-4xl">{{ title() }}</h1>
+        <p class="mt-2 text-sm text-[#244046]/75">Authenticated as {{ currentUserEmail() }}</p>
+      </div>
+      <button nz-button nzType="primary" nzSize="large" (click)="refreshHealth()">Sync Metrics</button>
     </div>
+  </nz-card>
 
-    <p class="mt-4 text-sm font-medium text-[#00241B]/70">Authenticated as: {{ currentUserEmail() }}</p>
+  <nz-row [nzGutter]="[16, 16]">
+    @for (metric of stats(); track metric.label) {
+      <nz-col [nzXs]="24" [nzMd]="12" [nzXl]="6">
+        <nz-card>
+          <nz-statistic [nzTitle]="metric.label" [nzValue]="metric.value" [nzPrefix]="metric.suffix"></nz-statistic>
+        </nz-card>
+      </nz-col>
+    }
+  </nz-row>
 
-    <div class="mt-8 grid gap-4 md:grid-cols-2">
-      <article class="rounded-2xl border border-[#DDDFDF] bg-[#FCFCFC] p-5">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#00241B]/65">Environment</p>
-        <p class="mt-2 text-lg font-semibold text-[#181F1C]">Inventory Web + API</p>
-        <p class="mt-2 text-sm text-[#00241B]/75">Structured as services-based monorepo with module-level extensibility.</p>
-      </article>
+  <nz-row [nzGutter]="[16, 16]">
+    <nz-col [nzXs]="24" [nzXl]="14">
+      <nz-card nzTitle="Priority Attention Queue">
+        <nz-table [nzData]="attentionItems()" [nzFrontPagination]="false" nzSize="middle">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Note</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of attentionItems(); track row.item) {
+              <tr>
+                <td>{{ row.item }}</td>
+                <td>{{ row.note }}</td>
+                <td>
+                  @if (row.priority === 'high') {
+                    <nz-tag nzColor="red">High</nz-tag>
+                  } @else {
+                    <nz-tag nzColor="orange">Medium</nz-tag>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      </nz-card>
+    </nz-col>
 
-      <article class="status-glow rounded-2xl border border-[#8D9EC6]/50 bg-[#EDE6F2] p-5">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#00241B]/70">Backend Health</p>
-        <p class="mt-2 text-lg font-extrabold text-[#00241B]">{{ healthStatus() }}</p>
-        <p class="mt-1 text-sm text-[#00241B]/75">{{ databaseStatus() }}</p>
-      </article>
-    </div>
-  </section>
-</main>
+    <nz-col [nzXs]="24" [nzXl]="10">
+      <nz-card nzTitle="Platform Health" class="status-glow">
+        <p class="text-lg font-bold text-[#244046]">{{ healthStatus() }}</p>
+        <p class="mt-2 text-sm text-[#244046]/75">{{ databaseStatus() }}</p>
+      </nz-card>
+    </nz-col>
+  </nz-row>
+</section>

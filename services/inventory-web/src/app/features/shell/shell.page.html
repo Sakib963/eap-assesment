@@ -1,0 +1,36 @@
+<nz-layout class="shell-layout">
+  <nz-sider nzCollapsible [nzTrigger]="null" [nzCollapsed]="collapsed()" class="shell-sider">
+    <div class="brand-block">
+      <p class="brand-title">EAP Inventory</p>
+      <p class="brand-sub">Ops Console</p>
+    </div>
+
+    <ul nz-menu nzMode="inline" nzTheme="dark">
+      <li nz-menu-item routerLink="/" routerLinkActive="ant-menu-item-selected" [routerLinkActiveOptions]="{ exact: true }">Dashboard</li>
+      <li nz-menu-item routerLink="/products" routerLinkActive="ant-menu-item-selected">Products</li>
+      <li nz-menu-item routerLink="/orders" routerLinkActive="ant-menu-item-selected">Orders</li>
+      <li nz-menu-item routerLink="/restock" routerLinkActive="ant-menu-item-selected">Restock Queue</li>
+      <li nz-menu-item routerLink="/activity" routerLinkActive="ant-menu-item-selected">Activity</li>
+    </ul>
+  </nz-sider>
+
+  <nz-layout>
+    <nz-header class="shell-header">
+      <div class="header-left">
+        <button nz-button nzType="default" nzSize="small" (click)="toggleSider()">
+          {{ collapsed() ? 'Expand' : 'Collapse' }}
+        </button>
+        <nz-tag [nzColor]="'#EDE6F2'">Production Demo</nz-tag>
+      </div>
+
+      <div class="header-right">
+        <span class="user-mail">{{ user()?.email || 'anonymous' }}</span>
+        <button nz-button nzType="default" nzSize="small" (click)="logout()">Logout</button>
+      </div>
+    </nz-header>
+
+    <nz-content class="shell-content">
+      <router-outlet></router-outlet>
+    </nz-content>
+  </nz-layout>
+</nz-layout>

@@ -1,0 +1,7 @@
+<nz-card nzTitle="Recent Activity">
+  <nz-timeline>
+    @for (activity of activities; track activity) {
+      <nz-timeline-item>{{ activity }}</nz-timeline-item>
+    }
+  </nz-timeline>
+</nz-card>

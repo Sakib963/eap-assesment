@@ -1,0 +1,28 @@
+<nz-card nzTitle="Orders">
+  <nz-table [nzData]="orders" nzSize="middle" [nzFrontPagination]="false">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Total</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (order of orders; track order.id) {
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>{{ order.customer }}</td>
+          <td>${{ order.total }}</td>
+          <td>
+            @if (order.status === 'completed') {
+              <nz-tag nzColor="green">Completed</nz-tag>
+            } @else {
+              <nz-tag nzColor="blue">Pending</nz-tag>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

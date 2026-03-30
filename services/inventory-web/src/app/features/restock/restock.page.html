@@ -1,0 +1,26 @@
+<nz-card nzTitle="Restock Queue">
+  <nz-table [nzData]="queue" nzSize="middle" [nzFrontPagination]="false">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity Needed</th>
+        <th>Priority</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of queue; track item.product) {
+        <tr>
+          <td>{{ item.product }}</td>
+          <td>{{ item.needed }}</td>
+          <td>
+            @if (item.priority === 'high') {
+              <nz-tag nzColor="red">High</nz-tag>
+            } @else {
+              <nz-tag nzColor="orange">Medium</nz-tag>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

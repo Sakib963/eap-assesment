@@ -1,0 +1,36 @@
+<nz-card nzTitle="Products" [nzExtra]="productActions">
+  <ng-template #productActions>
+    <button nz-button nzType="primary">Add Product</button>
+  </ng-template>
+
+  <nz-table [nzData]="products" nzSize="middle" [nzFrontPagination]="false">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Stock</th>
+        <th>Min Threshold</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of products; track item.name) {
+        <tr>
+          <td>{{ item.name }}</td>
+          <td>{{ item.category }}</td>
+          <td>{{ item.stock }}</td>
+          <td>{{ item.threshold }}</td>
+          <td>
+            @if (item.status === 'active') {
+              <nz-tag nzColor="green">Active</nz-tag>
+            } @else if (item.status === 'low') {
+              <nz-tag nzColor="orange">Low Stock</nz-tag>
+            } @else {
+              <nz-tag nzColor="red">Out of Stock</nz-tag>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+</nz-card>

@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #00241b;
+  --color-primary: #2f5d62;
   --color-secondary: #8d9ec6;
   --color-surface: #fcfcfc;
   --color-accent: #ede6f2;
@@ -19,9 +19,26 @@ body {
   font-family: 'Manrope', 'Segoe UI', sans-serif;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 90% 7%, rgba(141, 158, 198, 0.26), transparent 40%),
-    radial-gradient(circle at 10% 88%, rgba(0, 36, 27, 0.16), transparent 36%),
-    linear-gradient(145deg, var(--color-surface), #f5f6f7);
+    radial-gradient(circle at 86% 5%, rgba(141, 158, 198, 0.24), transparent 42%),
+    radial-gradient(circle at 12% 88%, rgba(47, 93, 98, 0.18), transparent 40%),
+    linear-gradient(145deg, #fcfcfc, #f2f5f5);
+}
+
+.ant-card {
+  border-radius: 16px;
+  border-color: #dddfdf;
+  box-shadow: 0 8px 30px rgba(24, 31, 28, 0.08);
+}
+
+.ant-card-head-title {
+  color: #22454b;
+  font-weight: 800;
+}
+
+.ant-table-thead > tr > th {
+  color: #22454b;
+  font-weight: 700;
+  background: #f6f9fa;
 }
 
 .hero-panel {
