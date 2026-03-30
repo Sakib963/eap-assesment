@@ -1,28 +1,33 @@
 <main class="min-h-screen px-5 py-10 md:px-8 md:py-14">
-  <section class="hero-panel mx-auto max-w-4xl rounded-3xl border border-[#d3c5ae] bg-[#fffaf2]/90 p-7 shadow-[0_18px_45px_rgba(30,42,47,0.14)] md:p-10">
-    <p class="mb-4 inline-flex items-center rounded-full border border-[#d66a44]/30 bg-[#d66a44]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#9f4b30]">
-      Setup Status
+  <section class="hero-panel mx-auto max-w-4xl rounded-3xl border border-[#DDDFDF] bg-[#FCFCFC]/95 p-7 shadow-[0_18px_45px_rgba(24,31,28,0.14)] md:p-10">
+    <p class="mb-4 inline-flex items-center rounded-full border border-[#8D9EC6]/40 bg-[#EDE6F2] px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[#00241B]">
+      Production Demo Theme
     </p>
 
-    <h1 class="text-4xl font-extrabold leading-tight text-[#1e2a2f] md:text-5xl">
+    <h1 class="text-4xl font-extrabold leading-tight text-[#181F1C] md:text-5xl">
       {{ title() }}
     </h1>
 
-    <p class="mt-4 max-w-2xl text-base leading-relaxed text-[#4f5c62] md:text-lg">
-      Foundational setup is active with Angular, Express, and Render PostgreSQL. The UI now uses the production demo visual direction we will carry into dashboard and module screens.
+    <p class="mt-4 max-w-2xl text-base leading-relaxed text-[#00241B]/75 md:text-lg">
+      Palette is now built around your preferred colors with primary, secondary, surface, and neutral roles, and ng-zorro components are configured to follow the same design system.
     </p>
 
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <button nz-button nzType="primary" nzSize="large">Primary Action</button>
+      <button nz-button nzType="default" nzSize="large">Secondary Action</button>
+    </div>
+
     <div class="mt-8 grid gap-4 md:grid-cols-2">
-      <article class="rounded-2xl border border-[#d8ccb8] bg-white/80 p-5">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#6a5b47]">Environment</p>
-        <p class="mt-2 text-lg font-semibold text-[#1e2a2f]">Inventory Web + API</p>
-        <p class="mt-2 text-sm text-[#4f5c62]">Structured as services-based monorepo for clean scaling and deployment.</p>
+      <article class="rounded-2xl border border-[#DDDFDF] bg-[#FCFCFC] p-5">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#00241B]/65">Environment</p>
+        <p class="mt-2 text-lg font-semibold text-[#181F1C]">Inventory Web + API</p>
+        <p class="mt-2 text-sm text-[#00241B]/75">Structured as services-based monorepo for clean scaling and deployment.</p>
       </article>
 
-      <article class="status-glow rounded-2xl border border-[#3d7a66]/30 bg-[#eef7f3] p-5">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#2e6453]">Backend Health</p>
-        <p class="mt-2 text-lg font-extrabold text-[#2f6c59]">{{ healthStatus() }}</p>
-        <p class="mt-2 text-sm text-[#456c60]">Live check from the API health endpoint.</p>
+      <article class="status-glow rounded-2xl border border-[#8D9EC6]/50 bg-[#EDE6F2] p-5">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-[#00241B]/70">Backend Health</p>
+        <p class="mt-2 text-lg font-extrabold text-[#00241B]">{{ healthStatus() }}</p>
+        <p class="mt-2 text-sm text-[#00241B]/75">Live check from the API health endpoint.</p>
       </article>
     </div>
   </section>

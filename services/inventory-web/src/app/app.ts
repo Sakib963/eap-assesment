@@ -1,9 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzTagModule } from 'ng-zorro-antd/tag';
 import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [NzButtonModule, NzTagModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
