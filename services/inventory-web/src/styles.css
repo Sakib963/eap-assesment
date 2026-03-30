@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-cream: #f6f2e9;
+  --bg-sand: #ede5d7;
+  --ink-deep: #1e2a2f;
+  --ink-muted: #4f5c62;
+  --accent-clay: #d66a44;
+  --accent-moss: #3d7a66;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  color: var(--ink-deep);
+  background:
+    radial-gradient(circle at 88% 6%, rgba(214, 106, 68, 0.2), transparent 35%),
+    radial-gradient(circle at 14% 88%, rgba(61, 122, 102, 0.18), transparent 36%),
+    linear-gradient(140deg, var(--bg-cream), var(--bg-sand));
+}
+
+.hero-panel {
+  animation: panel-in 500ms ease-out;
+}
+
+.status-glow {
+  animation: pulse-in 1.8s ease-in-out infinite;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-in {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(61, 122, 102, 0.24);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(61, 122, 102, 0);
+  }
+}
