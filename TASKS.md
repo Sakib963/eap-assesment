@@ -69,13 +69,13 @@ Status legend: Not Started, In Progress, Blocked, Done
 - [x] Add DB-aware health check endpoint
 
 ## Phase 3 - Authentication
-- [ ] Implement signup endpoint
-- [ ] Implement login endpoint
-- [ ] Implement demo login endpoint
-- [ ] Implement current-user endpoint (me)
-- [ ] Implement Angular auth service and route guards
-- [ ] Add login redirect to dashboard
-- [ ] Add demo login button with prefilled credentials
+- [x] Implement signup endpoint
+- [x] Implement login endpoint
+- [x] Implement demo login endpoint
+- [x] Implement current-user endpoint (me)
+- [x] Implement Angular auth service and route guards
+- [x] Add login redirect to dashboard
+- [x] Add demo login button with prefilled credentials
 
 ## Phase 4 - Categories and Products
 - [ ] Implement category CRUD
@@ -135,7 +135,7 @@ Status legend: Not Started, In Progress, Blocked, Done
 - [ ] Finalize README (setup + features + architecture + live URLs + repo)
 
 ## Requirement Coverage Ticklist
-- [ ] Requirement 1: Authentication
+- [x] Requirement 1: Authentication
 - [ ] Requirement 2: Product and category setup
 - [ ] Requirement 3: Order management
 - [ ] Requirement 4: Stock handling rules

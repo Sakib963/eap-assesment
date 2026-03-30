@@ -1,0 +1,41 @@
+<main class="min-h-screen px-5 py-10 md:px-8 md:py-14">
+  <section class="mx-auto max-w-xl">
+    <nz-card nzTitle="Sign In" class="rounded-2xl border border-[#DDDFDF]">
+      <p class="mb-6 text-[#00241B]/75">
+        Login to continue to your inventory dashboard.
+      </p>
+
+      @if (feedbackType() && feedbackMessage()) {
+        <nz-alert
+          class="mb-4"
+          [nzType]="feedbackType() === 'success' ? 'success' : 'error'"
+          [nzMessage]="feedbackMessage()"
+          nzShowIcon
+        ></nz-alert>
+      }
+
+      <form nz-form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+        <nz-form-item>
+          <nz-form-control nzErrorTip="Enter a valid email">
+            <input nz-input formControlName="email" placeholder="Email" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-control nzErrorTip="Password must be at least 6 characters">
+            <input nz-input type="password" formControlName="password" placeholder="Password" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <div class="flex flex-wrap gap-3 pt-2">
+          <button nz-button nzType="primary" [nzLoading]="loading()" type="submit">
+            Login
+          </button>
+          <button nz-button nzType="default" [nzLoading]="loading()" type="button" (click)="loginAsDemo()">
+            Demo Login
+          </button>
+        </div>
+      </form>
+    </nz-card>
+  </section>
+</main>
