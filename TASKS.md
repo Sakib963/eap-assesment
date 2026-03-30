@@ -61,12 +61,12 @@ Status legend: Not Started, In Progress, Blocked, Done
 - [x] Document schema in DATABASE.md
 
 ## Phase 2 - Backend Platform
-- [ ] Implement DB connection pool with SSL required
-- [ ] Implement global error handler
-- [ ] Implement request validation middleware
-- [ ] Implement JWT auth middleware
-- [ ] Implement unified API response/error format
-- [ ] Add DB-aware health check endpoint
+- [x] Implement DB connection pool with SSL required
+- [x] Implement global error handler
+- [x] Implement request validation middleware
+- [x] Implement JWT auth middleware
+- [x] Implement unified API response/error format
+- [x] Add DB-aware health check endpoint
 
 ## Phase 3 - Authentication
 - [ ] Implement signup endpoint

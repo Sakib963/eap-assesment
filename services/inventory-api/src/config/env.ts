@@ -12,4 +12,5 @@ export const env = {
   port: parsePort(process.env.PORT, 3000),
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
   databaseUrl: process.env.DATABASE_URL || 'postgresql://dbuser:dbpass@localhost:5432/inventory',
+  jwtSecret: process.env.JWT_SECRET ?? 'replace-me-in-production',
 };
