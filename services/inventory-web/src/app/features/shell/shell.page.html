@@ -1,4 +1,43 @@
 <nz-layout class="shell-layout">
+  <nz-drawer
+    class="mobile-menu-drawer"
+    [nzVisible]="mobileMenuVisible()"
+    [nzClosable]="true"
+    [nzMaskClosable]="true"
+    [nzPlacement]="'left'"
+    [nzWidth]="260"
+    [nzBodyStyle]="{ padding: '0px' }"
+    (nzOnClose)="closeMobileMenu()"
+  >
+    <ng-container *nzDrawerContent>
+      <div class="mobile-drawer-content">
+        <div class="brand-block">
+          <div class="brand-mark">
+            <span nz-icon nzType="appstore" nzTheme="outline"></span>
+          </div>
+          <div>
+            <p class="brand-title">EAP Inventory</p>
+          </div>
+        </div>
+
+        <ul nz-menu nzMode="inline" nzTheme="dark" class="shell-menu">
+          @for (item of menuItems; track item.path) {
+            <li
+              nz-menu-item
+              [routerLink]="item.path"
+              routerLinkActive="ant-menu-item-selected"
+              [routerLinkActiveOptions]="{ exact: item.exact === true }"
+              (click)="closeMobileMenu()"
+            >
+              <span nz-icon [nzType]="item.icon" nzTheme="outline"></span>
+              <span>{{ item.label }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </ng-container>
+  </nz-drawer>
+
   <nz-sider
     nzCollapsible
     [nzTrigger]="null"
@@ -21,85 +60,22 @@
     </div>
 
     <ul nz-menu nzMode="inline" nzTheme="dark" class="shell-menu">
-      <li
-        nz-menu-item
-        nz-tooltip
-        [nzTooltipTitle]="collapsed() ? 'Dashboard' : null"
-        nzTooltipPlacement="right"
-        routerLink="/"
-        routerLinkActive="ant-menu-item-selected"
-        [routerLinkActiveOptions]="{ exact: true }"
-      >
-        <span nz-icon nzType="home" nzTheme="outline"></span>
-        @if (!collapsed()) {
-          <span>Dashboard</span>
-        }
-      </li>
-      <li
-        nz-menu-item
-        nz-tooltip
-        [nzTooltipTitle]="collapsed() ? 'Categories' : null"
-        nzTooltipPlacement="right"
-        routerLink="/categories"
-        routerLinkActive="ant-menu-item-selected"
-      >
-        <span nz-icon nzType="tags" nzTheme="outline"></span>
-        @if (!collapsed()) {
-          <span>Categories</span>
-        }
-      </li>
-      <li
-        nz-menu-item
-        nz-tooltip
-        [nzTooltipTitle]="collapsed() ? 'Products' : null"
-        nzTooltipPlacement="right"
-        routerLink="/products"
-        routerLinkActive="ant-menu-item-selected"
-      >
-        <span nz-icon nzType="appstore" nzTheme="outline"></span>
-        @if (!collapsed()) {
-          <span>Products</span>
-        }
-      </li>
-      <li
-        nz-menu-item
-        nz-tooltip
-        [nzTooltipTitle]="collapsed() ? 'Orders' : null"
-        nzTooltipPlacement="right"
-        routerLink="/orders"
-        routerLinkActive="ant-menu-item-selected"
-      >
-        <span nz-icon nzType="shopping-cart" nzTheme="outline"></span>
-        @if (!collapsed()) {
-          <span>Orders</span>
-        }
-      </li>
-      <li
-        nz-menu-item
-        nz-tooltip
-        [nzTooltipTitle]="collapsed() ? 'Restock Queue' : null"
-        nzTooltipPlacement="right"
-        routerLink="/restock"
-        routerLinkActive="ant-menu-item-selected"
-      >
-        <span nz-icon nzType="inbox" nzTheme="outline"></span>
-        @if (!collapsed()) {
-          <span>Restock Queue</span>
-        }
-      </li>
-      <li
-        nz-menu-item
-        nz-tooltip
-        [nzTooltipTitle]="collapsed() ? 'Activity' : null"
-        nzTooltipPlacement="right"
-        routerLink="/activity"
-        routerLinkActive="ant-menu-item-selected"
-      >
-        <span nz-icon nzType="history" nzTheme="outline"></span>
-        @if (!collapsed()) {
-          <span>Activity</span>
-        }
-      </li>
+      @for (item of menuItems; track item.path) {
+        <li
+          nz-menu-item
+          nz-tooltip
+          [nzTooltipTitle]="collapsed() ? item.label : null"
+          nzTooltipPlacement="right"
+          [routerLink]="item.path"
+          routerLinkActive="ant-menu-item-selected"
+          [routerLinkActiveOptions]="{ exact: item.exact === true }"
+        >
+          <span nz-icon [nzType]="item.icon" nzTheme="outline"></span>
+          @if (!collapsed()) {
+            <span>{{ item.label }}</span>
+          }
+        </li>
+      }
     </ul>
   </nz-sider>
 
@@ -114,7 +90,7 @@
           [nzTooltipTitle]="collapseButtonLabel()"
           class="ant-btn-lg"
         >
-          <nz-icon [nzType]="collapsed() ? 'menu-unfold' : 'menu-fold'" nzTheme="outline"></nz-icon>
+          <nz-icon [nzType]="isMobile() ? 'menu' : (collapsed() ? 'menu-unfold' : 'menu-fold')" nzTheme="outline"></nz-icon>
         </button>
         <div>
           <nz-breadcrumb class="header-breadcrumb">

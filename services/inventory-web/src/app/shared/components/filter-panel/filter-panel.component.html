@@ -1,0 +1,40 @@
+<nz-card [nzTitle]="title">
+  <form [formGroup]="form" class="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
+    @for (field of fields; track field.key) {
+      <div>
+        <label class="mb-1.5 block text-xs font-semibold tracking-[0.02em] text-[#244046]">{{ field.label }}</label>
+
+        @if (field.type === 'search') {
+          <input
+            nz-input
+            nzSize="large"
+            class="w-full"
+            [formControlName]="field.key"
+            [placeholder]="field.placeholder || ''"
+          />
+        }
+
+        @if (field.type === 'select') {
+          <nz-select
+            class="w-full"
+            nzSize="large"
+            [formControlName]="field.key"
+            [nzAllowClear]="field.allowClear !== false"
+            [nzPlaceHolder]="field.placeholder || 'Select option'"
+          >
+            @for (option of field.options || []; track option.value) {
+              <nz-option [nzValue]="option.value" [nzLabel]="option.label"></nz-option>
+            }
+          </nz-select>
+        }
+      </div>
+    }
+
+    <div class="flex flex-wrap gap-2 md:justify-start">
+      <button nz-button nzType="default" nzSize="large" type="button" (click)="resetFilters()">
+        <nz-icon nzType="reload" nzTheme="outline"></nz-icon>
+        Reset
+      </button>
+    </div>
+  </form>
+</nz-card>

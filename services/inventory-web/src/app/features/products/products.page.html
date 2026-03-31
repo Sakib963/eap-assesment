@@ -46,7 +46,10 @@
 
   <nz-card nzTitle="Products" [nzExtra]="productsExtra">
     <ng-template #productsExtra>
-      <button nz-button nzType="primary" (click)="openCreateProductModal()">Add Product</button>
+      <button nz-button nzType="primary" (click)="openCreateProductModal()">
+        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+        Add Product
+      </button>
     </ng-template>
 
     <nz-spin [nzSpinning]="loadingProducts()">
@@ -78,7 +81,10 @@
               <td><nz-tag [nzColor]="statusColor(product.status)">{{ statusLabel(product.status) }}</nz-tag></td>
               <td>
                 <div class="flex flex-wrap justify-end gap-2 max-md:justify-start">
-                  <button nz-button nzType="default" nzSize="small" (click)="openEditProductModal(product)">Edit</button>
+                  <button nz-button nzType="default" nzSize="small" (click)="openEditProductModal(product)">
+                    <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+                    Edit
+                  </button>
                 <button
                   nz-button
                   nzType="default"
@@ -88,6 +94,7 @@
                   nzPopconfirmTitle="Delete this product?"
                   (nzOnConfirm)="deleteProduct(product.id)"
                 >
+                  <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
                   Delete
                 </button>
                 </div>

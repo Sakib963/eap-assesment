@@ -1,9 +1,11 @@
 export type ProductStatus = 'active' | 'out_of_stock' | 'inactive';
+export type CategoryStatus = 'active' | 'inactive';
 
 export interface Category {
   id: string;
   name: string;
   description: string | null;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -42,16 +44,19 @@ export interface CategoryListParams {
   page?: number;
   pageSize?: number;
   search?: string;
+  status?: CategoryStatus;
 }
 
 export interface CreateCategoryPayload {
   name: string;
   description?: string | null;
+  is_active?: boolean;
 }
 
 export interface UpdateCategoryPayload {
   name?: string;
   description?: string | null;
+  is_active?: boolean;
 }
 
 export interface CreateProductPayload {

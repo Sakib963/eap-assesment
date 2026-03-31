@@ -34,10 +34,11 @@ Product grouping / organization.
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
 | `name` | VARCHAR(100) | NOT NULL, UNIQUE | Category name (e.g., "Electronics") |
 | `description` | TEXT | NULLABLE | Extended description |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Active/inactive category status |
 | `created_at` | TIMESTAMP | DEFAULT NOW() | Record creation time |
 | `updated_at` | TIMESTAMP | DEFAULT NOW() | Last update time |
 
-**Indexes**: name, created_at
+**Indexes**: name, is_active, created_at
 
 **Relations**:
 - Has many: products
@@ -195,6 +196,7 @@ Located in `services/inventory-api/src/database/migrations/`:
 5. `005_create_order_items.ts` — Order line items
 6. `006_create_restock_queue.ts` — Auto-restock requests
 7. `007_create_activity_logs.ts` — Audit trail
+8. `008_add_is_active_to_categories.ts` — Category active/inactive support
 
 ### Running Migrations
 

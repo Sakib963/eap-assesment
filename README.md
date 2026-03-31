@@ -127,14 +127,15 @@ See [TASKS.md](./TASKS.md) for complete phase-by-phase breakdown:
 
 - **Phase -1**: Repository structure ✅
 - **Phase 0**: Setup (Angular + Express) ✅
-- **Phase 1**: Database schema (migrations)
-- **Phase 2**: Platform layer (middleware, validation)
-- **Phase 3**: Authentication (signup, login, JWT)
-- **Phase 4-5**: Catalog & stock management
+- **Phase 1**: Database schema (migrations) ✅
+- **Phase 2**: Platform layer (middleware, validation) ✅
+- **Phase 3**: Authentication (signup, login, JWT) ✅
+- **Phase 4**: Categories and products CRUD ✅
+- **Phase 5**: Stock rules and restock queue (in progress)
 - **Phase 6**: Order processing
 - **Phase 7**: Conflict detection
 - **Phase 8**: Dashboard & activity logs
-- **Phase 9**: Frontend integration
+- **Phase 9**: Frontend integration (in progress)
 - **Phase 10**: Deployment & finalization
 
 ## 📚 Shared Interfaces
@@ -227,6 +228,10 @@ See [Phase 1 - Database First](./TASKS.md#phase-1---database-first-render-postgr
 - `restock_queue` — Automatic restocking
 - `activity_logs` — Audit trail
 
+Recent schema updates:
+- `008_add_is_active_to_categories.ts` — Category active/inactive support
+- `009_add_case_insensitive_unique_index_to_categories_name.ts` — Case-insensitive uniqueness on category names
+
 ## 🐛 Troubleshooting
 
 **Frontend can't reach backend:**
@@ -252,15 +257,14 @@ See [Phase 1 - Database First](./TASKS.md#phase-1---database-first-render-postgr
 
 ## 🎯 Next Steps
 
-1. **Phase 1**: Add Render `DATABASE_URL` to `.env`
-2. **Phase 1**: Set up database migrations
-3. **Phase 2-8**: Implement core features
-4. **Phase 9**: Build frontend UI
-5. **Phase 10**: Deploy to Vercel + Netlify
+1. **Phase 5-6**: Complete stock automation and transactional order lifecycle
+2. **Phase 7**: Finish conflict-detection rules and exact user-facing error flows
+3. **Phase 8**: Complete dashboard metrics and activity timeline endpoints/UI
+4. **Phase 9-10**: Final frontend pages, test pass, and production deployment smoke checks
 
 ---
 
-**Status**: Phase 0 Complete ✅  
-**Last Updated**: March 30, 2026  
+**Status**: Phases 0-4 Complete, Phases 5-9 In Progress  
+**Last Updated**: March 31, 2026  
 **Repository Structure**: Option B (Domain-Based Monorepo)  
 **Deployment**: Netlify (Frontend) + Vercel (Backend) + Render (Database)

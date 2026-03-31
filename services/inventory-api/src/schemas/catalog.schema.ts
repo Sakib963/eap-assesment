@@ -10,6 +10,7 @@ export const listCategoriesSchema = z.object({
   body: z.object({}),
   query: paginationSchema.extend({
     search: z.string().trim().optional().default(''),
+    status: z.enum(['active', 'inactive']).optional(),
   }),
 });
 
@@ -19,6 +20,7 @@ export const createCategorySchema = z.object({
   body: z.object({
     name: z.string().trim().min(2).max(100),
     description: z.string().trim().max(500).optional().nullable(),
+    is_active: z.boolean().optional().default(true),
   }),
 });
 
@@ -27,10 +29,15 @@ export const updateCategorySchema = z.object({
     id: z.string().uuid(),
   }),
   query: z.object({}),
-  body: z.object({
-    name: z.string().trim().min(2).max(100).optional(),
-    description: z.string().trim().max(500).optional().nullable(),
-  }),
+  body: z
+    .object({
+      name: z.string().trim().min(2).max(100).optional(),
+      description: z.string().trim().max(500).optional().nullable(),
+      is_active: z.boolean().optional(),
+    })
+    .refine((body) => Object.values(body).some((value) => value !== undefined), {
+      message: 'At least one category field is required for update',
+    }),
 });
 
 export const deleteCategorySchema = z.object({
@@ -78,15 +85,19 @@ export const updateProductSchema = z.object({
     id: z.string().uuid(),
   }),
   query: z.object({}),
-  body: z.object({
-    category_id: z.string().uuid().optional(),
-    name: z.string().trim().min(2).max(100).optional(),
-    description: z.string().trim().max(1000).optional().nullable(),
-    price: z.coerce.number().positive().optional(),
-    current_stock: z.coerce.number().int().min(0).optional(),
-    min_stock_threshold: z.coerce.number().int().min(0).optional(),
-    is_active: z.boolean().optional(),
-  }),
+  body: z
+    .object({
+      category_id: z.string().uuid().optional(),
+      name: z.string().trim().min(2).max(100).optional(),
+      description: z.string().trim().max(1000).optional().nullable(),
+      price: z.coerce.number().positive().optional(),
+      current_stock: z.coerce.number().int().min(0).optional(),
+      min_stock_threshold: z.coerce.number().int().min(0).optional(),
+      is_active: z.boolean().optional(),
+    })
+    .refine((body) => Object.values(body).some((value) => value !== undefined), {
+      message: 'At least one product field is required for update',
+    }),
 });
 
 export const deleteProductSchema = z.object({

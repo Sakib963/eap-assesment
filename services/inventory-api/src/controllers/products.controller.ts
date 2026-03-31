@@ -1,7 +1,20 @@
 import { Request, Response } from 'express';
 import { createHttpError } from '../middleware/error-handler.js';
 import { sendSuccess } from '../utils/api-response.js';
+import { getCategoryAssignmentStatus } from '../services/categories.service.js';
 import { createProduct, deleteProduct, getProductById, listProducts, updateProduct } from '../services/products.service.js';
+
+const ensureCategoryAssignable = async (categoryId: string): Promise<void> => {
+  const categoryStatus = await getCategoryAssignmentStatus(categoryId);
+
+  if (!categoryStatus.exists) {
+    throw createHttpError(400, 'Category not found', 'CATEGORY_NOT_FOUND');
+  }
+
+  if (!categoryStatus.isActive) {
+    throw createHttpError(409, 'Category is inactive and cannot be used for products', 'CATEGORY_INACTIVE');
+  }
+};
 
 export const listProductsHandler = async (req: Request, res: Response): Promise<void> => {
   const page = Number(req.query.page ?? 1);
@@ -31,11 +44,17 @@ export const getProductByIdHandler = async (req: Request, res: Response): Promis
 };
 
 export const createProductHandler = async (req: Request, res: Response): Promise<void> => {
+  await ensureCategoryAssignable(String(req.body.category_id));
+
   const product = await createProduct(req.body);
   sendSuccess(res, product, 201);
 };
 
 export const updateProductHandler = async (req: Request, res: Response): Promise<void> => {
+  if (typeof req.body?.category_id === 'string') {
+    await ensureCategoryAssignable(req.body.category_id);
+  }
+
   const product = await updateProduct(String(req.params.id), req.body);
   if (!product) {
     throw createHttpError(404, 'Product not found');

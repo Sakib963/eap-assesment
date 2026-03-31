@@ -24,6 +24,35 @@ body {
     linear-gradient(145deg, #fbfdfd, #eef4f4);
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) #d7e0df;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+*::-webkit-scrollbar-track {
+  background: #d7e0df;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #18494f;
+}
+
 .ant-card {
   border-radius: 4px;
   border-color: #d7e0df;
@@ -36,9 +65,10 @@ body {
   font-weight: 800;
 }
 
-.ant-table-thead > tr > th {
+.ant-table-thead > tr > th,
+.ant-table-wrapper .ant-table-thead > tr > th {
   color: #1d4046;
-  font-weight: 700;
+  font-weight: 600 !important;
   background: #f2f7f7;
 }
 

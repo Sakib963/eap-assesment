@@ -13,6 +13,16 @@
   border-right: 1px solid rgba(255, 255, 255, 0.14);
 }
 
+.mobile-drawer-content {
+  height: 100%;
+  background: linear-gradient(180deg, #1e3d44, #13292e);
+}
+
+:host ::ng-deep .mobile-menu-drawer .ant-drawer-content,
+:host ::ng-deep .mobile-menu-drawer .ant-drawer-wrapper-body {
+  background: transparent;
+}
+
 .brand-block {
   margin-bottom: 8px;
   padding: 20px 16px;
@@ -107,6 +117,12 @@
 .header-breadcrumb {
   margin-top: 2px;
   font-size: 0.76rem;
+  font-weight: 600;
+}
+
+:host ::ng-deep .header-breadcrumb .ant-breadcrumb-link {
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .shell-content {
@@ -132,13 +148,26 @@
 }
 
 @media (max-width: 768px) {
+  .shell-sider {
+    display: none;
+  }
+
   .shell-main {
     margin-left: 0 !important;
   }
 
   .shell-header {
+    left: 0 !important;
     width: 100%;
     padding: 10px 12px;
+  }
+
+  .header-left {
+    gap: 8px;
+  }
+
+  .header-breadcrumb {
+    font-size: 0.72rem;
   }
 
   .shell-content {

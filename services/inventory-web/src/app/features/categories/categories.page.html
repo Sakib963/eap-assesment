@@ -1,99 +1,88 @@
 <section class="grid gap-5 lg:gap-6">
   <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(165deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
-    <div class="flex flex-col gap-2">
-      <div>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex flex-col gap-2">
         <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Taxonomy Control</p>
         <h1 class="my-1 text-[clamp(1.45rem,2.8vw,1.95rem)] font-extrabold text-[#17343a]">Categories</h1>
         <p class="m-0 text-[0.86rem] text-[#17343a]/70">Manage product grouping as a first-class resource, separate from product records.</p>
       </div>
+      <button nz-button nzType="primary" nzSize="large" (click)="openCreateDrawer()">
+        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+        Add Category
+      </button>
     </div>
   </nz-card>
 
-  <nz-card nzTitle="Category Filters">
-    <form [formGroup]="filterForm" class="grid grid-cols-1 items-end gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-      <div>
-        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Search</label>
-        <input nz-input formControlName="search" placeholder="Category name" />
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <button nz-button nzType="primary" type="button" (click)="onApplyFilters()">Apply</button>
-        <button nz-button type="button" (click)="onResetFilters()">Reset</button>
-      </div>
-    </form>
-  </nz-card>
+  <app-shared-filter-panel
+    title="Category Filters"
+    [form]="filterForm"
+    [fields]="filterFields"
+    [searchDebounceMs]="400"
+    (filtersChange)="onFiltersChange()"
+  ></app-shared-filter-panel>
 
-  @if (errorText()) {
-    <nz-card>
-      <p class="font-semibold text-[#9b1c1c]">{{ errorText() }}</p>
-    </nz-card>
-  }
+  <app-shared-data-list
+    [config]="categoryListConfig"
+    [items]="categories()"
+    [loading]="loading()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [total]="totalCategories()"
+    (pageChange)="onPageChange($event)"
+  ></app-shared-data-list>
 
-  <nz-card nzTitle="Category List" [nzExtra]="categoriesExtra">
-    <ng-template #categoriesExtra>
-      <button nz-button nzType="primary" (click)="openCreateModal()">Add Category</button>
-    </ng-template>
-
-    <nz-table [nzData]="categories()" [nzFrontPagination]="false" nzSize="middle" [nzLoading]="loading()">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th class="text-right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (category of categories(); track category.id) {
-          <tr>
-            <td><strong>{{ category.name }}</strong></td>
-            <td>{{ category.description || 'No description' }}</td>
-            <td>
-              <div class="flex flex-wrap justify-end gap-2 max-md:justify-start">
-                <button nz-button nzType="default" nzSize="small" (click)="openEditModal(category)">Edit</button>
-              <button
-                nz-button
-                nzType="default"
-                nzDanger
-                nzSize="small"
-                nz-popconfirm
-                nzPopconfirmTitle="Delete this category?"
-                (nzOnConfirm)="deleteCategory(category.id)"
-              >
-                Delete
-              </button>
-              </div>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </nz-table>
-
-    <div class="mt-3 flex justify-end">
-      <nz-pagination
-        [nzTotal]="totalCategories()"
-        [nzPageIndex]="page()"
-        [nzPageSize]="pageSize()"
-        [nzShowSizeChanger]="false"
-        (nzPageIndexChange)="onPageChange($event)"
-      ></nz-pagination>
-    </div>
-  </nz-card>
-
-  <nz-modal
+  <nz-drawer
+    [nzVisible]="drawerVisible()"
     [nzTitle]="isEditing() ? 'Edit Category' : 'Create Category'"
-    [nzVisible]="modalVisible()"
-    [nzOkText]="isEditing() ? 'Update' : 'Create'"
-    [nzCancelText]="'Cancel'"
-    (nzOnCancel)="modalVisible.set(false)"
-    (nzOnOk)="submitCategory()"
+    [nzWidth]="drawerWidth()"
+    [nzClosable]="true"
+    [nzMaskClosable]="!saving()"
+    [nzFooter]="drawerFooter"
+    (nzOnClose)="closeDrawer()"
   >
-    <ng-container *nzModalContent>
-      <form [formGroup]="categoryForm" class="grid gap-3">
-        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Category Name</label>
-        <input nz-input formControlName="name" placeholder="Electronics" />
+    <ng-container *nzDrawerContent>
+      <form nz-form [nzLayout]="'vertical'" [formGroup]="categoryForm" class="grid gap-3">
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Category Name</nz-form-label>
+          <nz-form-control>
+            <input nz-input nzSize="large" formControlName="name" placeholder="Electronics" />
+          </nz-form-control>
+        </nz-form-item>
 
-        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Description</label>
-        <textarea nz-input rows="3" formControlName="description"></textarea>
+        <nz-form-item>
+          <nz-form-label>Description (Optional)</nz-form-label>
+          <nz-form-control>
+              <textarea nz-input nzSize="large" rows="3" formControlName="description" placeholder="Description"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Status</nz-form-label>
+          <nz-form-control>
+              <nz-select class="w-full" nzSize="large" formControlName="status" nzPlaceHolder="Select status">
+              <nz-option nzValue="active" nzLabel="Active"></nz-option>
+              <nz-option nzValue="inactive" nzLabel="Inactive"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
       </form>
     </ng-container>
-  </nz-modal>
+  </nz-drawer>
+
+  <ng-template #drawerFooter>
+    <div class="flex justify-end gap-2">
+        <button nz-button nzType="default" nzSize="large" [disabled]="saving()" (click)="closeDrawer()">
+          <nz-icon nzType="close" nzTheme="outline"></nz-icon>
+          Cancel
+        </button>
+        <button nz-button nzType="primary" nzSize="large" [nzLoading]="saving()" (click)="submitCategory()">
+          @if (isEditing()) {
+            <nz-icon nzType="edit" nzTheme="outline"></nz-icon>
+          } @else {
+            <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+          }
+          {{ isEditing() ? 'Update' : 'Create' }}
+      </button>
+    </div>
+  </ng-template>
 </section>

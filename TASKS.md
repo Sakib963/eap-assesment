@@ -53,6 +53,8 @@ Status legend: Not Started, In Progress, Blocked, Done
 - [x] Add migration: order_items table (order line items, unique constraint)
 - [x] Add migration: restock_queue table (auto-restock with priority)
 - [x] Add migration: activity_logs table (audit trail with JSONB details)
+- [x] Add migration: category active status (`is_active`)
+- [x] Add migration: case-insensitive unique index for category names
 - [x] Add foreign key constraints and CASCADE/RESTRICT rules
 - [x] Add performance indexes for queries (status+date, priority, stock level)
 - [x] Add seed script with demo user, 4 categories, 11 products, 3 orders
@@ -119,12 +121,12 @@ Status legend: Not Started, In Progress, Blocked, Done
 
 ## Phase 9 - Frontend Integration
 - [ ] Build dashboard page
-- [ ] Build categories/products pages
+- [x] Build categories/products pages
 - [ ] Build orders pages (create/list/status updates)
 - [ ] Build restock queue page
 - [ ] Build activity log page
-- [ ] Add all required warning/error messages in UI
-- [ ] Verify responsive behavior (mobile + desktop)
+- [x] Add all required warning/error messages in UI (auth/categories/products scope)
+- [x] Verify responsive behavior (mobile + desktop) for implemented pages
 
 ## Phase 10 - Finalization and Delivery
 - [ ] Add optional bonus features only if all mandatory checks pass
