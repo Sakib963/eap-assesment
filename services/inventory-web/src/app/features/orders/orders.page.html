@@ -1,5 +1,16 @@
-<nz-card nzTitle="Orders">
-  <nz-table [nzData]="orders" nzSize="middle" [nzFrontPagination]="false">
+<section class="grid gap-5">
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
+    <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Order Desk</p>
+    <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Order Monitoring</h1>
+    <p class="m-0 text-[0.86rem] text-[#17343a]/70">Track open and completed orders in one operational queue.</p>
+  </nz-card>
+
+  <nz-card nzTitle="Orders" [nzExtra]="orderActions">
+    <ng-template #orderActions>
+      <button nz-button nzType="primary">Create Order</button>
+    </ng-template>
+
+    <nz-table [nzData]="orders" nzSize="middle" [nzFrontPagination]="false">
     <thead>
       <tr>
         <th>Order ID</th>
@@ -11,7 +22,7 @@
     <tbody>
       @for (order of orders; track order.id) {
         <tr>
-          <td>{{ order.id }}</td>
+          <td><strong>{{ order.id }}</strong></td>
           <td>{{ order.customer }}</td>
           <td>${{ order.total }}</td>
           <td>
@@ -24,5 +35,6 @@
         </tr>
       }
     </tbody>
-  </nz-table>
-</nz-card>
+    </nz-table>
+  </nz-card>
+</section>

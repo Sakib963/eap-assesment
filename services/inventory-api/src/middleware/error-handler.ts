@@ -7,6 +7,25 @@ interface PgError extends Error {
   detail?: string;
 }
 
+export interface HttpError extends Error {
+  status: number;
+  code: string;
+  details?: unknown;
+}
+
+export const createHttpError = (
+  status: number,
+  message: string,
+  code = 'HTTP_ERROR',
+  details?: unknown
+): HttpError => {
+  const error = new Error(message) as HttpError;
+  error.status = status;
+  error.code = code;
+  error.details = details;
+  return error;
+};
+
 const isPgError = (error: unknown): error is PgError => {
   return Boolean(error) && typeof error === 'object' && 'code' in (error as object);
 };
@@ -23,6 +42,18 @@ export const globalErrorHandler = (
 ): void => {
   if (error instanceof ZodError) {
     sendError(res, 400, 'VALIDATION_ERROR', 'Request validation failed', error.issues);
+    return;
+  }
+
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    'code' in error &&
+    typeof (error as HttpError).status === 'number'
+  ) {
+    const httpError = error as HttpError;
+    sendError(res, httpError.status, httpError.code, httpError.message, httpError.details);
     return;
   }
 

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -6,7 +7,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 @Component({
   selector: 'app-orders-page',
   standalone: true,
-  imports: [NzCardModule, NzTableModule, NzTagModule],
+  imports: [NzButtonModule, NzCardModule, NzTableModule, NzTagModule],
   templateUrl: './orders.page.html',
   styleUrl: './orders.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

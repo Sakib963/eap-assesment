@@ -1,36 +1,183 @@
 <nz-layout class="shell-layout">
-  <nz-sider nzCollapsible [nzTrigger]="null" [nzCollapsed]="collapsed()" class="shell-sider">
-    <div class="brand-block">
-      <p class="brand-title">EAP Inventory</p>
-      <p class="brand-sub">Ops Console</p>
+  <nz-sider
+    nzCollapsible
+    [nzTrigger]="null"
+    [nzCollapsed]="collapsed()"
+    [nzWidth]="260"
+    [nzCollapsedWidth]="isMobile() ? 0 : 70"
+    nzBreakpoint="lg"
+    (nzBreakpoint)="onSiderBreakpoint($event)"
+    class="shell-sider"
+  >
+    <div class="brand-block" [class.brand-block-collapsed]="collapsed()">
+      <div class="brand-mark">
+        <span nz-icon nzType="appstore" nzTheme="outline"></span>
+      </div>
+      @if (!collapsed()) {
+        <div>
+          <p class="brand-title">EAP Inventory</p>
+        </div>
+      }
     </div>
 
-    <ul nz-menu nzMode="inline" nzTheme="dark">
-      <li nz-menu-item routerLink="/" routerLinkActive="ant-menu-item-selected" [routerLinkActiveOptions]="{ exact: true }">Dashboard</li>
-      <li nz-menu-item routerLink="/products" routerLinkActive="ant-menu-item-selected">Products</li>
-      <li nz-menu-item routerLink="/orders" routerLinkActive="ant-menu-item-selected">Orders</li>
-      <li nz-menu-item routerLink="/restock" routerLinkActive="ant-menu-item-selected">Restock Queue</li>
-      <li nz-menu-item routerLink="/activity" routerLinkActive="ant-menu-item-selected">Activity</li>
+    <ul nz-menu nzMode="inline" nzTheme="dark" class="shell-menu">
+      <li
+        nz-menu-item
+        nz-tooltip
+        [nzTooltipTitle]="collapsed() ? 'Dashboard' : null"
+        nzTooltipPlacement="right"
+        routerLink="/"
+        routerLinkActive="ant-menu-item-selected"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <span nz-icon nzType="home" nzTheme="outline"></span>
+        @if (!collapsed()) {
+          <span>Dashboard</span>
+        }
+      </li>
+      <li
+        nz-menu-item
+        nz-tooltip
+        [nzTooltipTitle]="collapsed() ? 'Products' : null"
+        nzTooltipPlacement="right"
+        routerLink="/products"
+        routerLinkActive="ant-menu-item-selected"
+      >
+        <span nz-icon nzType="appstore" nzTheme="outline"></span>
+        @if (!collapsed()) {
+          <span>Products</span>
+        }
+      </li>
+      <li
+        nz-menu-item
+        nz-tooltip
+        [nzTooltipTitle]="collapsed() ? 'Categories' : null"
+        nzTooltipPlacement="right"
+        routerLink="/categories"
+        routerLinkActive="ant-menu-item-selected"
+      >
+        <span nz-icon nzType="tags" nzTheme="outline"></span>
+        @if (!collapsed()) {
+          <span>Categories</span>
+        }
+      </li>
+      <li
+        nz-menu-item
+        nz-tooltip
+        [nzTooltipTitle]="collapsed() ? 'Orders' : null"
+        nzTooltipPlacement="right"
+        routerLink="/orders"
+        routerLinkActive="ant-menu-item-selected"
+      >
+        <span nz-icon nzType="shopping-cart" nzTheme="outline"></span>
+        @if (!collapsed()) {
+          <span>Orders</span>
+        }
+      </li>
+      <li
+        nz-menu-item
+        nz-tooltip
+        [nzTooltipTitle]="collapsed() ? 'Restock Queue' : null"
+        nzTooltipPlacement="right"
+        routerLink="/restock"
+        routerLinkActive="ant-menu-item-selected"
+      >
+        <span nz-icon nzType="inbox" nzTheme="outline"></span>
+        @if (!collapsed()) {
+          <span>Restock Queue</span>
+        }
+      </li>
+      <li
+        nz-menu-item
+        nz-tooltip
+        [nzTooltipTitle]="collapsed() ? 'Activity' : null"
+        nzTooltipPlacement="right"
+        routerLink="/activity"
+        routerLinkActive="ant-menu-item-selected"
+      >
+        <span nz-icon nzType="history" nzTheme="outline"></span>
+        @if (!collapsed()) {
+          <span>Activity</span>
+        }
+      </li>
     </ul>
   </nz-sider>
 
-  <nz-layout>
-    <nz-header class="shell-header">
+  <nz-layout class="shell-main" [style.marginLeft.px]="siderWidth()">
+    <nz-header class="shell-header" [style.left.px]="siderWidth()">
       <div class="header-left">
-        <button nz-button nzType="default" nzSize="small" (click)="toggleSider()">
-          {{ collapsed() ? 'Expand' : 'Collapse' }}
+        <!-- <button
+          nz-button
+          nzType="default"
+          nz-tooltip
+          (click)="toggleSider()"
+          [nzTooltipTitle]="collapseButtonLabel()"
+        >
+          <nz-icon [nzType]="collapsed() ? 'menu-unfold' : 'menu-fold'" nzTheme="outline"></nz-icon>
+          <span class="hidden text-xs font-bold md:inline">{{ collapseButtonLabel() }}</span>
+        </button> -->
+        <button
+          nz-button
+          nzType="default"
+          (click)="toggleSider()"
+          [nzTooltipTitle]="collapseButtonLabel()"
+          nz-tooltip
+        >
+          <nz-icon [nzType]="collapsed() ? 'menu-unfold' : 'menu-fold'" />
+        <ng-container class="hidden font-semibold md:block">{{ collapseButtonLabel() }}</ng-container>
+          
         </button>
-        <nz-tag [nzColor]="'#EDE6F2'">Production Demo</nz-tag>
+        <div>
+          <nz-breadcrumb class="header-breadcrumb">
+            @for (crumb of breadcrumbs(); track crumb) {
+              <nz-breadcrumb-item>{{ crumb }}</nz-breadcrumb-item>
+            }
+          </nz-breadcrumb>
+        </div>
       </div>
 
       <div class="header-right">
-        <span class="user-mail">{{ user()?.email || 'anonymous' }}</span>
-        <button nz-button nzType="default" nzSize="small" (click)="logout()">Logout</button>
+        <div
+          nz-dropdown
+          [nzDropdownMenu]="profileMenu"
+          nzTrigger="click"
+          class="inline-flex cursor-pointer items-center gap-1.5 rounded border border-[#d6dede] bg-[#f4f8f8] px-2 py-1.5"
+        >
+          <nz-avatar nzIcon="user" nzSize="small"></nz-avatar>
+          <span nz-icon nzType="down" nzTheme="outline"></span>
+        </div>
+
+        <nz-dropdown-menu #profileMenu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item disabled>
+              <div class="flex items-center gap-2.5 py-1">
+                <nz-avatar nzIcon="user" nzSize="large"></nz-avatar>
+                <div class="flex flex-col gap-0.5">
+                  <div class="text-[0.9rem] font-bold leading-tight text-[#17343a]">
+                    {{ userDisplayName() }}
+                  </div>
+                  <div class="text-[0.8rem] leading-tight text-[#4a656a]">
+                    {{ user()?.email || 'anonymous' }}
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li nz-menu-divider></li>
+            <li nz-menu-item class="!px-3 !py-2">
+              <button nz-button nzType="default" nzDanger nzBlock (click)="logout()">
+                <span nz-icon nzType="logout" nzTheme="outline"></span>
+                Logout
+              </button>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
       </div>
     </nz-header>
 
     <nz-content class="shell-content">
-      <router-outlet></router-outlet>
+      <div class="content-scroll">
+        <router-outlet></router-outlet>
+      </div>
     </nz-content>
   </nz-layout>
 </nz-layout>

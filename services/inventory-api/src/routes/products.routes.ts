@@ -1,0 +1,30 @@
+import { Router } from 'express';
+import {
+  createProductHandler,
+  deleteProductHandler,
+  getProductByIdHandler,
+  listProductsHandler,
+  updateProductHandler,
+} from '../controllers/products.controller.js';
+import { asyncHandler } from '../middleware/async-handler.js';
+import { requireAuth } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import {
+  createProductSchema,
+  deleteProductSchema,
+  getProductByIdSchema,
+  listProductsSchema,
+  updateProductSchema,
+} from '../schemas/catalog.schema.js';
+
+const productsRouter = Router();
+
+productsRouter.use(requireAuth);
+
+productsRouter.get('/', validate(listProductsSchema), asyncHandler(listProductsHandler));
+productsRouter.get('/:id', validate(getProductByIdSchema), asyncHandler(getProductByIdHandler));
+productsRouter.post('/', validate(createProductSchema), asyncHandler(createProductHandler));
+productsRouter.put('/:id', validate(updateProductSchema), asyncHandler(updateProductHandler));
+productsRouter.delete('/:id', validate(deleteProductSchema), asyncHandler(deleteProductHandler));
+
+export default productsRouter;

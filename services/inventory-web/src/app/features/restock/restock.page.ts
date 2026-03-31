@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
@@ -6,7 +7,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 @Component({
   selector: 'app-restock-page',
   standalone: true,
-  imports: [NzCardModule, NzTableModule, NzTagModule],
+  imports: [NzButtonModule, NzCardModule, NzTableModule, NzTagModule],
   templateUrl: './restock.page.html',
   styleUrl: './restock.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

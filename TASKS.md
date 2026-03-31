@@ -78,11 +78,11 @@ Status legend: Not Started, In Progress, Blocked, Done
 - [x] Add demo login button with prefilled credentials
 
 ## Phase 4 - Categories and Products
-- [ ] Implement category CRUD
-- [ ] Implement product CRUD with required fields
-- [ ] Add product status support: Active / Out of Stock
-- [ ] Add listing filters and pagination
-- [ ] Add frontend forms and validations
+- [x] Implement category CRUD
+- [x] Implement product CRUD with required fields
+- [x] Add product status support: Active / Out of Stock
+- [x] Add listing filters and pagination
+- [x] Add frontend forms and validations
 
 ## Phase 5 - Stock Rules and Restock Queue
 - [ ] Auto-mark product Out of Stock when stock reaches zero
@@ -136,7 +136,7 @@ Status legend: Not Started, In Progress, Blocked, Done
 
 ## Requirement Coverage Ticklist
 - [x] Requirement 1: Authentication
-- [ ] Requirement 2: Product and category setup
+- [x] Requirement 2: Product and category setup
 - [ ] Requirement 3: Order management
 - [ ] Requirement 4: Stock handling rules
 - [ ] Requirement 5: Restock queue

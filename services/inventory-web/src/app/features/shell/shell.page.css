@@ -4,62 +4,144 @@
 
 .shell-layout {
   min-height: 100vh;
+  height: 100vh;
   background: transparent;
 }
 
 .shell-sider {
-  background: linear-gradient(180deg, #214f55, #162f34);
-  border-right: 1px solid rgba(252, 252, 252, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  z-index: 1001;
+  background: linear-gradient(180deg, #1e3d44, #13292e);
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .brand-block {
-  padding: 20px 18px;
-  border-bottom: 1px solid rgba(252, 252, 252, 0.12);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  padding: 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-block-collapsed {
+  justify-content: center;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #f6fcfc;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 .brand-title {
   margin: 0;
-  color: #fcfcfc;
+  color: #f6fcfc;
   font-size: 1rem;
   font-weight: 800;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.brand-sub {
-  margin: 2px 0 0;
-  color: rgba(252, 252, 252, 0.7);
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.shell-menu {
+  padding: 8px;
+}
+
+.shell-menu .ant-menu-item {
+  margin: 4px 0;
+  border-radius: 4px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.shell-menu .ant-menu-item .anticon {
+  margin-right: 10px;
+}
+
+.shell-menu .ant-menu-item:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+.shell-menu .ant-menu-item-selected,
+.shell-menu .ant-menu-item-selected:hover {
+  background: #1f5c63 !important;
+  color: #ffffff !important;
+}
+
+.shell-main {
+  min-height: 100vh;
+  height: 100vh;
+  transition: margin-left 180ms ease;
 }
 
 .shell-header {
-  height: auto;
-  line-height: normal;
-  padding: 12px 20px;
-  background: rgba(252, 252, 252, 0.86);
-  border-bottom: 1px solid #dddfdf;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  min-height: 74px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid #d6dede;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  transition: left 180ms ease;
 }
 
 .header-left,
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.user-mail {
-  color: #244046;
-  font-size: 0.88rem;
-  font-weight: 700;
+.header-breadcrumb {
+  margin-top: 2px;
+  font-size: 0.76rem;
 }
 
 .shell-content {
+  height: 100vh;
+  padding-top: 74px;
+  overflow: hidden;
+}
+
+.content-scroll {
+  height: calc(100vh - 74px);
+  overflow: auto;
   padding: 20px;
-  background: transparent;
+}
+
+@media (max-width: 768px) {
+  .shell-main {
+    margin-left: 0 !important;
+  }
+
+  .shell-header {
+    width: 100%;
+    padding: 10px 12px;
+  }
+
+  .shell-content {
+    padding-top: 70px;
+  }
+
+  .content-scroll {
+    height: calc(100vh - 70px);
+    padding: 14px;
+  }
 }

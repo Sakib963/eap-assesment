@@ -1,36 +1,160 @@
-<nz-card nzTitle="Products" [nzExtra]="productActions">
-  <ng-template #productActions>
-    <button nz-button nzType="primary">Add Product</button>
-  </ng-template>
+<section class="grid gap-5 lg:gap-6">
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(165deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
+    <div class="flex flex-col gap-2">
+      <div>
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Catalog Studio</p>
+        <h1 class="my-1 text-[clamp(1.45rem,2.8vw,1.95rem)] font-extrabold text-[#17343a]">Products</h1>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">Manage SKU records, stock state, pricing, and lifecycle status.</p>
+      </div>
+    </div>
+  </nz-card>
 
-  <nz-table [nzData]="products" nzSize="middle" [nzFrontPagination]="false">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Category</th>
-        <th>Stock</th>
-        <th>Min Threshold</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of products; track item.name) {
-        <tr>
-          <td>{{ item.name }}</td>
-          <td>{{ item.category }}</td>
-          <td>{{ item.stock }}</td>
-          <td>{{ item.threshold }}</td>
-          <td>
-            @if (item.status === 'active') {
-              <nz-tag nzColor="green">Active</nz-tag>
-            } @else if (item.status === 'low') {
-              <nz-tag nzColor="orange">Low Stock</nz-tag>
-            } @else {
-              <nz-tag nzColor="red">Out of Stock</nz-tag>
-            }
-          </td>
-        </tr>
-      }
-    </tbody>
-  </nz-table>
-</nz-card>
+  <nz-card nzTitle="Product Filters">
+    <form [formGroup]="filterForm" class="grid grid-cols-1 gap-3 md:grid-cols-4 md:items-end">
+      <div>
+        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Search</label>
+        <input nz-input formControlName="search" placeholder="Name or category" />
+      </div>
+      <div>
+        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Category</label>
+        <nz-select formControlName="categoryId" nzAllowClear nzPlaceHolder="All categories">
+          @for (category of categories(); track category.id) {
+            <nz-option [nzValue]="category.id" [nzLabel]="category.name"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div>
+        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Status</label>
+        <nz-select formControlName="status" nzAllowClear nzPlaceHolder="All statuses">
+          @for (status of filterStatusOptions; track status) {
+            <nz-option [nzValue]="status" [nzLabel]="statusLabel(status)"></nz-option>
+          }
+        </nz-select>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button nz-button nzType="primary" type="button" (click)="onApplyFilters()">Apply</button>
+        <button nz-button type="button" (click)="onResetFilters()">Reset</button>
+      </div>
+    </form>
+  </nz-card>
+
+  @if (errorText()) {
+    <nz-card>
+      <p class="font-semibold text-[#9b1c1c]">{{ errorText() }}</p>
+    </nz-card>
+  }
+
+  <nz-card nzTitle="Products" [nzExtra]="productsExtra">
+    <ng-template #productsExtra>
+      <button nz-button nzType="primary" (click)="openCreateProductModal()">Add Product</button>
+    </ng-template>
+
+    <nz-spin [nzSpinning]="loadingProducts()">
+      <nz-table [nzData]="products()" [nzFrontPagination]="false" nzSize="middle">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Threshold</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.id) {
+            <tr>
+              <td>
+                <strong>{{ product.name }}</strong>
+                @if (product.description) {
+                  <p class="mt-1 text-xs text-[#244046]/70">{{ product.description }}</p>
+                }
+              </td>
+              <td>{{ product.category_name }}</td>
+              <td>${{ product.price.toFixed(2) }}</td>
+              <td>{{ product.current_stock }}</td>
+              <td>{{ product.min_stock_threshold }}</td>
+              <td><nz-tag [nzColor]="statusColor(product.status)">{{ statusLabel(product.status) }}</nz-tag></td>
+              <td>
+                <div class="flex flex-wrap justify-end gap-2 max-md:justify-start">
+                  <button nz-button nzType="default" nzSize="small" (click)="openEditProductModal(product)">Edit</button>
+                <button
+                  nz-button
+                  nzType="default"
+                  nzDanger
+                  nzSize="small"
+                  nz-popconfirm
+                  nzPopconfirmTitle="Delete this product?"
+                  (nzOnConfirm)="deleteProduct(product.id)"
+                >
+                  Delete
+                </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </nz-table>
+    </nz-spin>
+
+    <div class="mt-3 flex justify-end">
+      <nz-pagination
+        [nzTotal]="totalProducts()"
+        [nzPageIndex]="page()"
+        [nzPageSize]="pageSize()"
+        [nzShowSizeChanger]="false"
+        (nzPageIndexChange)="onPageChange($event)"
+      ></nz-pagination>
+    </div>
+  </nz-card>
+
+  <nz-modal
+    [nzTitle]="isEditingProduct() ? 'Edit Product' : 'Create Product'"
+    [nzVisible]="productModalVisible()"
+    [nzOkText]="isEditingProduct() ? 'Update' : 'Create'"
+    [nzCancelText]="'Cancel'"
+    (nzOnCancel)="productModalVisible.set(false)"
+    (nzOnOk)="submitProduct()"
+  >
+    <ng-container *nzModalContent>
+      <form [formGroup]="productForm" class="grid gap-3">
+        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Product Name</label>
+        <input nz-input formControlName="name" placeholder="Laptop Pro 15" />
+
+        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Category</label>
+        <nz-select formControlName="category_id" nzPlaceHolder="Select category">
+          @for (category of categories(); track category.id) {
+            <nz-option [nzValue]="category.id" [nzLabel]="category.name"></nz-option>
+          }
+        </nz-select>
+
+        <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Description</label>
+        <textarea nz-input rows="3" formControlName="description"></textarea>
+
+        <div class="grid gap-3 md:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Price</label>
+            <nz-input-number [nzMin]="0.01" [nzStep]="0.01" formControlName="price"></nz-input-number>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Current Stock</label>
+            <nz-input-number [nzMin]="0" formControlName="current_stock"></nz-input-number>
+          </div>
+        </div>
+
+        <div class="grid gap-3 md:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Min Threshold</label>
+            <nz-input-number [nzMin]="0" formControlName="min_stock_threshold"></nz-input-number>
+          </div>
+          <div class="flex flex-col justify-end gap-2">
+            <label class="mb-1.5 block text-xs font-bold tracking-[0.02em] text-[#244046]">Active</label>
+            <nz-switch formControlName="is_active"></nz-switch>
+          </div>
+        </div>
+      </form>
+    </ng-container>
+  </nz-modal>
+
+</section>

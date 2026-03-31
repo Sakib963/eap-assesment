@@ -1,71 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-primary: #2f5d62;
-  --color-secondary: #8d9ec6;
-  --color-surface: #fcfcfc;
-  --color-accent: #ede6f2;
-  --color-neutral: #dddfdf;
-  --color-ink: #181f1c;
+  --color-primary: #1f5c63;
+  --color-secondary: #d98b3a;
+  --color-surface: #fbfdfd;
+  --color-accent: #fff3e4;
+  --color-neutral: #d7e0df;
+  --color-ink: #1a2f33;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
   color: var(--color-ink);
   background:
-    radial-gradient(circle at 86% 5%, rgba(141, 158, 198, 0.24), transparent 42%),
-    radial-gradient(circle at 12% 88%, rgba(47, 93, 98, 0.18), transparent 40%),
-    linear-gradient(145deg, #fcfcfc, #f2f5f5);
+    radial-gradient(circle at 88% 8%, rgba(217, 139, 58, 0.22), transparent 44%),
+    radial-gradient(circle at 10% 92%, rgba(31, 92, 99, 0.17), transparent 40%),
+    linear-gradient(145deg, #fbfdfd, #eef4f4);
 }
 
 .ant-card {
-  border-radius: 16px;
-  border-color: #dddfdf;
-  box-shadow: 0 8px 30px rgba(24, 31, 28, 0.08);
+  border-radius: 4px;
+  border-color: #d7e0df;
+  box-shadow: 0 8px 20px rgba(23, 52, 58, 0.06);
 }
 
 .ant-card-head-title {
-  color: #22454b;
+  color: #1d4046;
+  font-family: 'Sora', 'IBM Plex Sans', sans-serif;
   font-weight: 800;
 }
 
 .ant-table-thead > tr > th {
-  color: #22454b;
+  color: #1d4046;
   font-weight: 700;
-  background: #f6f9fa;
+  background: #f2f7f7;
 }
 
-.hero-panel {
-  animation: panel-in 500ms ease-out;
-}
-
-.status-glow {
-  animation: pulse-in 1.8s ease-in-out infinite;
-}
-
-@keyframes panel-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-in {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(141, 158, 198, 0.42);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(141, 158, 198, 0);
-  }
+.ant-btn,
+.ant-input,
+.ant-input-number,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-card,
+.ant-modal-content,
+.ant-modal-header,
+.ant-tag,
+.ant-pagination-item,
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link,
+.ant-menu-item,
+.ant-avatar,
+.ant-dropdown-menu,
+.ant-tooltip-inner {
+  border-radius: 4px !important;
 }

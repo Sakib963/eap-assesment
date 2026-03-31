@@ -1,28 +1,26 @@
 <section class="grid gap-5">
-  <nz-card class="hero-panel" [nzBordered]="false">
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
-        <p class="inline-flex rounded-full border border-[#8D9EC6]/40 bg-[#EDE6F2] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#244046]">
-          Operations Overview
-        </p>
-        <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-[#181F1C] md:text-4xl">{{ title() }}</h1>
-        <p class="mt-2 text-sm text-[#244046]/75">Authenticated as {{ currentUserEmail() }}</p>
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Live Operations Snapshot</p>
+        <h1 class="my-2 text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold leading-[1.1] text-[#17343a]">{{ title() }}</h1>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">Signed in as {{ currentUserEmail() }}</p>
       </div>
-      <button nz-button nzType="primary" nzSize="large" (click)="refreshHealth()">Sync Metrics</button>
+      <button nz-button nzType="primary" nzSize="large" (click)="refreshHealth()">Refresh Health</button>
     </div>
   </nz-card>
 
-  <nz-row [nzGutter]="[16, 16]">
+  <nz-row [nzGutter]="[14, 14]">
     @for (metric of stats(); track metric.label) {
       <nz-col [nzXs]="24" [nzMd]="12" [nzXl]="6">
-        <nz-card>
+        <nz-card class="rounded-sm">
           <nz-statistic [nzTitle]="metric.label" [nzValue]="metric.value" [nzPrefix]="metric.suffix"></nz-statistic>
         </nz-card>
       </nz-col>
     }
   </nz-row>
 
-  <nz-row [nzGutter]="[16, 16]">
+  <nz-row [nzGutter]="[14, 14]">
     <nz-col [nzXs]="24" [nzXl]="14">
       <nz-card nzTitle="Priority Attention Queue">
         <nz-table [nzData]="attentionItems()" [nzFrontPagination]="false" nzSize="middle">
@@ -53,9 +51,9 @@
     </nz-col>
 
     <nz-col [nzXs]="24" [nzXl]="10">
-      <nz-card nzTitle="Platform Health" class="status-glow">
-        <p class="text-lg font-bold text-[#244046]">{{ healthStatus() }}</p>
-        <p class="mt-2 text-sm text-[#244046]/75">{{ databaseStatus() }}</p>
+      <nz-card nzTitle="Platform Health" class="rounded-sm bg-[linear-gradient(165deg,#fefcf7,#f2ede2)]">
+        <p class="m-0 text-[0.95rem] font-bold text-[#17343a]">{{ healthStatus() }}</p>
+        <p class="mt-2 text-[0.85rem] text-[#17343a]/75">{{ databaseStatus() }}</p>
       </nz-card>
     </nz-col>
   </nz-row>

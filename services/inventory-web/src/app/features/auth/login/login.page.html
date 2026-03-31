@@ -1,9 +1,16 @@
-<main class="min-h-screen px-5 py-10 md:px-8 md:py-14">
-  <section class="mx-auto max-w-xl">
-    <nz-card nzTitle="Sign In" class="rounded-2xl border border-[#DDDFDF]">
-      <p class="mb-6 text-[#00241B]/75">
-        Login to continue to your inventory dashboard.
+<main class="grid min-h-screen place-items-center p-5">
+  <section class="grid w-full max-w-[1100px] gap-4 md:grid-cols-[1.1fr_0.9fr]">
+    <article class="rounded-sm bg-[linear-gradient(165deg,#244046,#1c3136)] p-7 text-[#f7fcfa] shadow-[0_18px_36px_rgba(20,39,44,0.25)]">
+      <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.16em] opacity-90">Inventory Intelligence</p>
+      <h1 class="my-3 text-[clamp(1.8rem,4vw,2.4rem)] font-extrabold leading-[1.08]">Control stock flow with clarity, speed, and confidence.</h1>
+      <p class="m-0 max-w-[45ch] text-[#f7fcfa]/85">
+        Move from spreadsheet firefighting to a live operational cockpit. Track products, order health, and replenishment
+        decisions from one focused workspace.
       </p>
+    </article>
+
+    <nz-card nzTitle="Sign In" class="rounded-sm">
+      <p class="mb-4 text-[#181f1c]/70">Use your account to access the command workspace.</p>
 
       @if (feedbackType() && feedbackMessage()) {
         <nz-alert
@@ -27,13 +34,9 @@
           </nz-form-control>
         </nz-form-item>
 
-        <div class="flex flex-wrap gap-3 pt-2">
-          <button nz-button nzType="primary" [nzLoading]="loading()" type="submit">
-            Login
-          </button>
-          <button nz-button nzType="default" [nzLoading]="loading()" type="button" (click)="loginAsDemo()">
-            Demo Login
-          </button>
+        <div class="flex flex-wrap gap-2.5">
+          <button nz-button nzType="primary" [nzLoading]="loading()" type="submit">Login</button>
+          <button nz-button nzType="default" [nzLoading]="loading()" type="button" (click)="loginAsDemo()">Demo Login</button>
         </div>
       </form>
     </nz-card>

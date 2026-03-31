@@ -20,6 +20,12 @@ export const routes: Routes = [
 				title: 'Products',
 			},
 			{
+				path: 'categories',
+				loadComponent: () =>
+					import('./features/categories/categories.page').then((m) => m.CategoriesPage),
+				title: 'Categories',
+			},
+			{
 				path: 'orders',
 				loadComponent: () =>
 					import('./features/orders/orders.page').then((m) => m.OrdersPage),

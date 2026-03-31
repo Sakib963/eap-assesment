@@ -1,7 +1,17 @@
-<nz-card nzTitle="Recent Activity">
-  <nz-timeline>
-    @for (activity of activities; track activity) {
-      <nz-timeline-item>{{ activity }}</nz-timeline-item>
-    }
-  </nz-timeline>
-</nz-card>
+<section class="grid gap-5">
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
+    <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Audit Stream</p>
+    <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Activity Timeline</h1>
+    <p class="m-0 text-[0.86rem] text-[#17343a]/70">Recent operational actions captured for visibility and troubleshooting.</p>
+  </nz-card>
+
+  <nz-card nzTitle="Recent Activity">
+    <nz-timeline>
+      @for (activity of activities; track activity) {
+        <nz-timeline-item>
+          <p class="m-0 font-semibold text-[#1d3d42]">{{ activity }}</p>
+        </nz-timeline-item>
+      }
+    </nz-timeline>
+  </nz-card>
+</section>
