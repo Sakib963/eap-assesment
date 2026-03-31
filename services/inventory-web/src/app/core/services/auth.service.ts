@@ -12,16 +12,31 @@ const AUTH_USER_KEY = 'inventory_auth_user';
 export class AuthService {
   private readonly api = inject(ApiClientService);
 
-  private readonly tokenState = signal<string | null>(localStorage.getItem(AUTH_TOKEN_KEY));
+  private readonly tokenState = signal<string | null>(this.readStoredToken());
   private readonly userState = signal<PublicUser | null>(this.readStoredUser());
 
   readonly token = computed(() => this.tokenState());
   readonly user = computed(() => this.userState());
   readonly isAuthenticated = computed(() => Boolean(this.tokenState()));
 
+  hasValidSession(): boolean {
+    const token = this.tokenState();
+    if (!token) {
+      return false;
+    }
+
+    const isValid = this.isTokenValid(token);
+    if (!isValid) {
+      this.logout();
+      return false;
+    }
+
+    return true;
+  }
+
   signup(payload: SignupRequest): Observable<AuthPayload> {
     return this.api
-      .post<LoginRequest, ApiResponse<AuthPayload>>('/api/v1/auth/signup', payload)
+      .post<SignupRequest, ApiResponse<AuthPayload>>('/api/v1/auth/signup', payload)
       .pipe(
         map((response) => {
           if (!response.success) {
@@ -75,6 +90,9 @@ export class AuthService {
           if (user) {
             this.userState.set(user);
             localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+          } else {
+            this.userState.set(null);
+            localStorage.removeItem(AUTH_USER_KEY);
           }
         })
       );
@@ -103,7 +121,44 @@ export class AuthService {
     try {
       return JSON.parse(stored) as PublicUser;
     } catch {
+      localStorage.removeItem(AUTH_USER_KEY);
       return null;
+    }
+  }
+
+  private readStoredToken(): string | null {
+    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!storedToken) {
+      return null;
+    }
+
+    if (!this.isTokenValid(storedToken)) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+      return null;
+    }
+
+    return storedToken;
+  }
+
+  private isTokenValid(token: string): boolean {
+    try {
+      const [, payloadPart] = token.split('.');
+      if (!payloadPart) {
+        return false;
+      }
+
+      const normalized = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+      const payload = JSON.parse(atob(padded)) as { exp?: number };
+
+      if (typeof payload.exp !== 'number') {
+        return false;
+      }
+
+      return payload.exp > Math.floor(Date.now() / 1000);
+    } catch {
+      return false;
     }
   }
 }

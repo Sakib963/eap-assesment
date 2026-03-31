@@ -6,7 +6,6 @@
         <h1 class="my-2 text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold leading-[1.1] text-[#17343a]">{{ title() }}</h1>
         <p class="m-0 text-[0.86rem] text-[#17343a]/70">Signed in as {{ currentUserEmail() }}</p>
       </div>
-      <button nz-button nzType="primary" nzSize="large" (click)="refreshHealth()">Refresh Health</button>
     </div>
   </nz-card>
 
@@ -51,10 +50,6 @@
     </nz-col>
 
     <nz-col [nzXs]="24" [nzXl]="10">
-      <nz-card nzTitle="Platform Health" class="rounded-sm bg-[linear-gradient(165deg,#fefcf7,#f2ede2)]">
-        <p class="m-0 text-[0.95rem] font-bold text-[#17343a]">{{ healthStatus() }}</p>
-        <p class="mt-2 text-[0.85rem] text-[#17343a]/75">{{ databaseStatus() }}</p>
-      </nz-card>
     </nz-col>
   </nz-row>
 </section>

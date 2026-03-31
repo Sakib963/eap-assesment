@@ -1,44 +1,83 @@
-<main class="grid min-h-screen place-items-center p-5">
-  <section class="grid w-full max-w-[1100px] gap-4 md:grid-cols-[1.1fr_0.9fr]">
-    <article class="rounded-sm bg-[linear-gradient(165deg,#244046,#1c3136)] p-7 text-[#f7fcfa] shadow-[0_18px_36px_rgba(20,39,44,0.25)]">
-      <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.16em] opacity-90">Inventory Intelligence</p>
-      <h1 class="my-3 text-[clamp(1.8rem,4vw,2.4rem)] font-extrabold leading-[1.08]">Control stock flow with clarity, speed, and confidence.</h1>
-      <p class="m-0 max-w-[45ch] text-[#f7fcfa]/85">
-        Move from spreadsheet firefighting to a live operational cockpit. Track products, order health, and replenishment
-        decisions from one focused workspace.
-      </p>
-    </article>
+<main class="relative min-h-screen overflow-hidden bg-[#e8f3f2]">
+  <svg class="absolute inset-0 h-full w-full" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <filter id="gblur">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="46" />
+      </filter>
+    </defs>
 
-    <nz-card nzTitle="Sign In" class="rounded-sm">
-      <p class="mb-4 text-[#181f1c]/70">Use your account to access the command workspace.</p>
+    <ellipse cx="170" cy="120" rx="260" ry="170" fill="#8fb2b7" opacity="0.48" filter="url(#gblur)" class="animate-blob" />
+    <ellipse cx="1250" cy="790" rx="250" ry="180" fill="#6e9aa0" opacity="0.42" filter="url(#gblur)" class="animate-blob animation-delay-2000" />
 
-      @if (feedbackType() && feedbackMessage()) {
-        <nz-alert
-          class="mb-4"
-          [nzType]="feedbackType() === 'success' ? 'success' : 'error'"
-          [nzMessage]="feedbackMessage()"
-          nzShowIcon
-        ></nz-alert>
-      }
+    <g class="animate-float">
+      <rect x="120" y="470" width="120" height="110" rx="10" fill="#5e9198" opacity="0.55" />
+      <rect x="170" y="395" width="120" height="110" rx="10" fill="#7eadb3" opacity="0.55" />
+      <rect x="220" y="320" width="120" height="110" rx="10" fill="#1f5c63" opacity="0.6" />
+    </g>
 
-      <form nz-form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
-        <nz-form-item>
-          <nz-form-control nzErrorTip="Enter a valid email">
-            <input nz-input formControlName="email" placeholder="Email" />
-          </nz-form-control>
-        </nz-form-item>
+    <g class="animate-bounce-slow">
+      <ellipse cx="1050" cy="500" rx="95" ry="78" fill="#d98b3a" opacity="0.95" />
+      <ellipse cx="980" cy="520" rx="58" ry="46" fill="#e5a05b" opacity="0.95" />
+      <ellipse cx="1120" cy="522" rx="58" ry="46" fill="#e5a05b" opacity="0.95" />
+      <circle cx="1040" cy="466" r="10" fill="#fff6ea" />
+      <circle cx="1073" cy="466" r="10" fill="#fff6ea" />
+      <circle cx="1040" cy="466" r="4" fill="#2c2c2c" />
+      <circle cx="1073" cy="466" r="4" fill="#2c2c2c" />
+      <path d="M1045 492 Q1058 500 1070 492" stroke="#2c2c2c" stroke-width="4" fill="none" stroke-linecap="round" />
+    </g>
 
-        <nz-form-item>
-          <nz-form-control nzErrorTip="Password must be at least 6 characters">
-            <input nz-input type="password" formControlName="password" placeholder="Password" />
-          </nz-form-control>
-        </nz-form-item>
+    <g class="animate-confetti">
+      <rect x="1080" y="260" width="10" height="10" rx="2" fill="#1f5c63" />
+      <circle cx="1130" cy="280" r="7" fill="#d98b3a" />
+      <rect x="1185" y="245" width="11" height="11" rx="2" fill="#86aeb3" />
+      <circle cx="1265" cy="275" r="8" fill="#1f5c63" />
+      <rect x="1310" y="255" width="9" height="9" rx="2" fill="#d98b3a" />
+    </g>
+  </svg>
 
-        <div class="flex flex-wrap gap-2.5">
-          <button nz-button nzType="primary" [nzLoading]="loading()" type="submit">Login</button>
-          <button nz-button nzType="default" [nzLoading]="loading()" type="button" (click)="loginAsDemo()">Demo Login</button>
+  <section class="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-10 sm:px-6 lg:px-10">
+    <div class="w-full max-w-[430px] rounded-2xl border border-[#c8dde0] bg-white/95 p-7 shadow-[0_24px_52px_rgba(14,52,56,0.16)]">
+        <div class="mb-3 flex items-center gap-2.5">
+          <div class="flex h-9 w-9 items-center justify-center rounded bg-[#1f5c63]/90 text-[#f6fcfc] text-lg">
+            <span nz-icon nzType="appstore" nzTheme="outline"></span>
+          </div>
+          <div>
+            <p class="m-0 text-[0.72rem] font-bold uppercase tracking-[0.12em] text-[#1f5c63]">EAP Inventory</p>
+          </div>
         </div>
-      </form>
-    </nz-card>
+        <h2 class="mt-1 text-4xl font-extrabold text-[#17343a]">Login</h2>
+
+        <form nz-form [formGroup]="form" (ngSubmit)="submit()" class="mt-4 space-y-3">
+          <div>
+            <label class="mb-1 block text-[11px] font-semibold text-[#1f5c63]">Email</label>
+            <nz-form-item>
+              <nz-form-control nzErrorTip="Please enter a valid email">
+                <input nz-input type="email" formControlName="email" [disabled]="loading()" placeholder="example@mail.com" class="!h-9 !rounded" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-[11px] font-semibold text-[#1f5c63]">Password</label>
+            <nz-form-item>
+              <nz-form-control nzErrorTip="Password must be at least 6 characters">
+                <input nz-input type="password" formControlName="password" [disabled]="loading()" placeholder="Password" class="!h-9 !rounded" />
+              </nz-form-control>
+            </nz-form-item>
+          </div>
+
+          <button nz-button nzType="primary" [nzLoading]="loading()" [disabled]="loading()" type="submit" class="!h-9 !w-full !rounded !bg-[#1f5c63] hover:!bg-[#17343a] !font-semibold">
+            Sign In
+          </button>
+
+          <button nz-button nzType="default" [nzLoading]="loading()" [disabled]="loading()" type="button" (click)="loginAsDemo()" class="!h-9 !w-full !rounded !border-[#b6d0d3] !text-[#1f5c63] hover:!border-[#1f5c63]">
+            Continue With Demo
+          </button>
+        </form>
+
+        <p class="mt-5 text-center text-[11px] text-[#4a656a]">
+          Don&apos;t have an account? <span class="font-semibold text-[#1f5c63]">Register for free</span>
+        </p>
+    </div>
   </section>
 </main>
