@@ -1,38 +1,25 @@
-<section class="grid gap-5">
+<section class="grid gap-5 lg:gap-6">
   <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
     <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Supply Signal</p>
     <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Restock Queue</h1>
-    <p class="m-0 text-[0.86rem] text-[#17343a]/70">Prioritized items that need purchasing attention now.</p>
+    <p class="m-0 text-[0.86rem] text-[#17343a]/70">Auto-prioritized queue based on stock shortage and threshold levels.</p>
   </nz-card>
 
-  <nz-card nzTitle="Restock Queue" [nzExtra]="restockActions">
-    <ng-template #restockActions>
-      <button nz-button nzType="primary">Generate Purchase Draft</button>
-    </ng-template>
+  <app-shared-filter-panel
+    title="Restock Filters"
+    [form]="filterForm"
+    [fields]="filterFields"
+    [searchDebounceMs]="300"
+    (filtersChange)="onFiltersChange()"
+  ></app-shared-filter-panel>
 
-    <nz-table [nzData]="queue" nzSize="middle" [nzFrontPagination]="false">
-    <thead>
-      <tr>
-        <th>Product</th>
-        <th>Quantity Needed</th>
-        <th>Priority</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (item of queue; track item.product) {
-        <tr>
-          <td><strong>{{ item.product }}</strong></td>
-          <td>{{ item.needed }}</td>
-          <td>
-            @if (item.priority === 'high') {
-              <nz-tag nzColor="red">High</nz-tag>
-            } @else {
-              <nz-tag nzColor="orange">Medium</nz-tag>
-            }
-          </td>
-        </tr>
-      }
-    </tbody>
-    </nz-table>
-  </nz-card>
+  <app-shared-data-list
+    [config]="restockListConfig"
+    [items]="queue()"
+    [loading]="loading()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [total]="totalItems()"
+    (pageChange)="onPageChange($event)"
+  ></app-shared-data-list>
 </section>

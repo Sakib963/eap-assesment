@@ -27,6 +27,17 @@
             }
           </nz-select>
         }
+
+        @if (field.type === 'date') {
+          <input
+            nz-input
+            nzSize="large"
+            class="w-full"
+            [formControlName]="field.key"
+            [placeholder]="field.placeholder || 'YYYY-MM-DD'"
+            type="date"
+          />
+        }
       </div>
     }
 

@@ -6,7 +6,9 @@ import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
 import { provideNzIcons } from 'ng-zorro-antd/icon';
 import {
   AppstoreOutline,
+  CheckCircleOutline,
   CloseOutline,
+  CloseCircleOutline,
   DeleteOutline,
   DownOutline,
   EditOutline,
@@ -42,7 +44,9 @@ export const appConfig: ApplicationConfig = {
     provideNzIcons([
       HomeOutline,
       AppstoreOutline,
+      CheckCircleOutline,
       CloseOutline,
+      CloseCircleOutline,
       TagsOutline,
       ShoppingCartOutline,
       InboxOutline,

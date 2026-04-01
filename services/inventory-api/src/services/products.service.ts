@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { syncRestockQueueForProduct } from './stock-rules.service.js';
 
 export type ProductStatus = 'active' | 'out_of_stock' | 'inactive';
 
@@ -98,7 +99,7 @@ export const listProducts = async (filters: ProductFilters): Promise<{ items: Pr
       'p.updated_at',
       'c.name as category_name'
     )
-    .orderBy('p.created_at', 'desc')
+    .orderByRaw('LOWER(p.name) ASC')
     .offset(offset)
     .limit(pageSize)) as ProductRecord[];
 
@@ -145,22 +146,34 @@ export const createProduct = async (payload: {
   min_stock_threshold: number;
   status?: ProductStatus;
 }): Promise<ProductView> => {
-  const isActive = payload.status !== 'inactive';
-  const stock = payload.status === 'out_of_stock' ? 0 : payload.current_stock;
+  const id = await db.transaction(async (trx) => {
+    const isActive = payload.status !== 'inactive';
+    const stock = payload.status === 'out_of_stock' ? 0 : payload.current_stock;
 
-  const inserted = await db<ProductRecord>('products')
-    .insert({
-      category_id: payload.category_id,
-      name: payload.name,
-      description: payload.description ?? null,
-      price: payload.price,
+    const inserted = await trx<ProductRecord>('products')
+      .insert({
+        category_id: payload.category_id,
+        name: payload.name,
+        description: payload.description ?? null,
+        price: payload.price,
+        current_stock: stock,
+        min_stock_threshold: payload.min_stock_threshold,
+        is_active: isActive,
+      })
+      .returning(['id']);
+
+    const insertedId = (inserted[0] as { id: string }).id;
+
+    await syncRestockQueueForProduct(trx, {
+      id: insertedId,
       current_stock: stock,
       min_stock_threshold: payload.min_stock_threshold,
       is_active: isActive,
-    })
-    .returning(['id']);
+    });
 
-  const id = (inserted[0] as { id: string }).id;
+    return insertedId;
+  });
+
   const product = await getProductById(id);
   if (!product) {
     throw new Error('PRODUCT_CREATE_FAILED');
@@ -180,34 +193,54 @@ export const updateProduct = async (
     status?: ProductStatus;
   }
 ): Promise<ProductView | null> => {
-  const nextPayload: Record<string, unknown> = {
-    updated_at: db.fn.now(),
-  };
+  const updated = await db.transaction(async (trx) => {
+    const existing = await trx<ProductRecord>('products').where({ id }).first();
+    if (!existing) {
+      return false;
+    }
 
-  if (payload.category_id !== undefined) nextPayload.category_id = payload.category_id;
-  if (payload.name !== undefined) nextPayload.name = payload.name;
-  if (payload.description !== undefined) nextPayload.description = payload.description;
-  if (payload.price !== undefined) nextPayload.price = payload.price;
-  if (payload.min_stock_threshold !== undefined) nextPayload.min_stock_threshold = payload.min_stock_threshold;
+    const nextPayload: Record<string, unknown> = {
+      updated_at: db.fn.now(),
+    };
 
-  if (payload.current_stock !== undefined) {
-    nextPayload.current_stock = payload.current_stock;
-  }
-  if (payload.status === 'inactive') {
-    nextPayload.is_active = false;
-  }
-  if (payload.status === 'active' || payload.status === 'out_of_stock') {
-    nextPayload.is_active = true;
-  }
-  if (payload.status === 'out_of_stock') {
-    nextPayload.current_stock = 0;
-  }
+    if (payload.category_id !== undefined) nextPayload.category_id = payload.category_id;
+    if (payload.name !== undefined) nextPayload.name = payload.name;
+    if (payload.description !== undefined) nextPayload.description = payload.description;
+    if (payload.price !== undefined) nextPayload.price = payload.price;
+    if (payload.min_stock_threshold !== undefined) nextPayload.min_stock_threshold = payload.min_stock_threshold;
 
-  const updatedRows = await db<ProductRecord>('products')
-    .where({ id })
-    .update(nextPayload);
+    if (payload.current_stock !== undefined) {
+      nextPayload.current_stock = payload.current_stock;
+    }
+    if (payload.status === 'inactive') {
+      nextPayload.is_active = false;
+    }
+    if (payload.status === 'active' || payload.status === 'out_of_stock') {
+      nextPayload.is_active = true;
+    }
+    if (payload.status === 'out_of_stock') {
+      nextPayload.current_stock = 0;
+    }
 
-  if (!updatedRows) {
+    await trx<ProductRecord>('products').where({ id }).update(nextPayload);
+
+    const refreshed = await trx<ProductRecord>('products')
+      .where({ id })
+      .first('id', 'current_stock', 'min_stock_threshold', 'is_active');
+
+    if (refreshed) {
+      await syncRestockQueueForProduct(trx, {
+        id: refreshed.id,
+        current_stock: refreshed.current_stock,
+        min_stock_threshold: refreshed.min_stock_threshold,
+        is_active: refreshed.is_active,
+      });
+    }
+
+    return true;
+  });
+
+  if (!updated) {
     return null;
   }
 

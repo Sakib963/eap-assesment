@@ -1,40 +1,122 @@
-<section class="grid gap-5">
+<section class="grid gap-5 lg:gap-6">
   <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
-    <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Order Desk</p>
-    <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Order Monitoring</h1>
-    <p class="m-0 text-[0.86rem] text-[#17343a]/70">Track open and completed orders in one operational queue.</p>
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex flex-col gap-2">
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Order Desk</p>
+        <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Orders</h1>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">Create transactional orders with stock-aware validation and conflict-safe workflows.</p>
+      </div>
+      <button nz-button nzType="primary" nzSize="large" (click)="openCreateDrawer()">
+        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+        Create Order
+      </button>
+    </div>
   </nz-card>
 
-  <nz-card nzTitle="Orders" [nzExtra]="orderActions">
-    <ng-template #orderActions>
-      <button nz-button nzType="primary">Create Order</button>
-    </ng-template>
+  <app-shared-filter-panel
+    title="Order Filters"
+    [form]="filterForm"
+    [fields]="filterFields"
+    [searchDebounceMs]="300"
+    (filtersChange)="onFiltersChange()"
+  ></app-shared-filter-panel>
 
-    <nz-table [nzData]="orders" nzSize="middle" [nzFrontPagination]="false">
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>Customer</th>
-        <th>Total</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (order of orders; track order.id) {
-        <tr>
-          <td><strong>{{ order.id }}</strong></td>
-          <td>{{ order.customer }}</td>
-          <td>${{ order.total }}</td>
-          <td>
-            @if (order.status === 'completed') {
-              <nz-tag nzColor="green">Completed</nz-tag>
-            } @else {
-              <nz-tag nzColor="blue">Pending</nz-tag>
-            }
-          </td>
-        </tr>
-      }
-    </tbody>
-    </nz-table>
-  </nz-card>
+  <app-shared-data-list
+    [config]="orderListConfig"
+    [items]="orders()"
+    [loading]="loading()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [total]="totalOrders()"
+    (pageChange)="onPageChange($event)"
+  ></app-shared-data-list>
+
+  <nz-drawer
+    [nzVisible]="drawerVisible()"
+    nzTitle="Create Order"
+    [nzWidth]="drawerWidth()"
+    [nzClosable]="true"
+    [nzMaskClosable]="!saving()"
+    [nzFooter]="drawerFooter"
+    (nzOnClose)="closeDrawer()"
+  >
+    <ng-container *nzDrawerContent>
+      <form nz-form [nzLayout]="'vertical'" [formGroup]="orderForm" class="grid gap-4">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="m-0 text-base font-semibold text-[#17343a]">Line Items</h3>
+          <button nz-button nzType="default" nzSize="large" type="button" (click)="addOrderItem()">
+            <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+            Add Item
+          </button>
+        </div>
+
+        <div formArrayName="items" class="grid gap-3">
+          @for (itemGroup of orderItems.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="rounded border border-[#d6e0df] bg-[#fbfdfd] p-3">
+              <div class="mb-3 flex items-center justify-between gap-2">
+                <p class="m-0 text-sm font-semibold text-[#17343a]">Item {{ i + 1 }}</p>
+                <button
+                  nz-button
+                  nzType="default"
+                  nzSize="large"
+                  nzDanger
+                  type="button"
+                  (click)="removeOrderItem(i)"
+                >
+                  <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                  Remove
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <nz-form-item>
+                  <nz-form-label [nzRequired]="true">Product</nz-form-label>
+                  <nz-form-control [nzValidateStatus]="itemGroup.get('product_id')!" [nzErrorTip]="productErrorTip(i)">
+                    <nz-select
+                      class="w-full"
+                      nzSize="large"
+                      formControlName="product_id"
+                      nzPlaceHolder="Select product"
+                      [nzLoading]="loadingProducts()"
+                    >
+                      @for (option of productOptions; track option.value) {
+                        <nz-option [nzValue]="option.value" [nzLabel]="option.label"></nz-option>
+                      }
+                    </nz-select>
+                  </nz-form-control>
+                </nz-form-item>
+
+                <nz-form-item>
+                  <nz-form-label [nzRequired]="true">Quantity</nz-form-label>
+                  <nz-form-control [nzValidateStatus]="itemGroup.get('quantity')!" [nzErrorTip]="quantityErrorTip(i)">
+                    <nz-input-number
+                      [nzMin]="1"
+                      nzSize="large"
+                      formControlName="quantity"
+                      placeholder="1"
+                      [style.width.%]="100"
+                      class="w-full"
+                    ></nz-input-number>
+                  </nz-form-control>
+                </nz-form-item>
+              </div>
+            </div>
+          }
+        </div>
+      </form>
+    </ng-container>
+  </nz-drawer>
+
+  <ng-template #drawerFooter>
+    <div class="flex justify-end gap-2">
+      <button nz-button nzType="default" nzSize="large" [disabled]="saving()" (click)="closeDrawer()">
+        <nz-icon nzType="close" nzTheme="outline"></nz-icon>
+        Cancel
+      </button>
+      <button nz-button nzType="primary" nzSize="large" [nzLoading]="saving()" (click)="submitOrder()">
+        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+        Create
+      </button>
+    </div>
+  </ng-template>
 </section>

@@ -17,7 +17,7 @@ export interface SharedFilterOption {
 export interface SharedFilterField {
   key: string;
   label: string;
-  type: 'search' | 'select';
+  type: 'search' | 'select' | 'date';
   placeholder?: string;
   options?: SharedFilterOption[];
   allowClear?: boolean;

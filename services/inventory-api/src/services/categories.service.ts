@@ -68,7 +68,7 @@ export const listCategories = async (filters: CategoryFilters): Promise<{ items:
         builder.select('id', 'name', 'description', 'created_at', 'updated_at');
       }
     })
-    .orderBy('name', 'asc')
+    .orderByRaw('LOWER(name) ASC')
     .offset(offset)
     .limit(pageSize);
 
