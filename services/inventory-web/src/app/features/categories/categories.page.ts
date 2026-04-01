@@ -105,6 +105,8 @@ export class CategoriesPage {
   protected readonly categoryListConfig: SharedListConfig<Category> = {
     title: 'Category List',
     defaultView: 'table',
+    serialColumnWidth: '8%',
+    actionsColumnWidth: '14%',
     cardGridClass: 'grid-cols-1 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
     emptyText: 'No categories match your filters.',
     showEmptyState: false,
@@ -112,15 +114,18 @@ export class CategoriesPage {
       {
         key: 'name',
         label: 'Name',
+        width: '24%',
       },
       {
         key: 'description',
         label: 'Description',
+        width: '36%',
         formatter: (item) => item.description || 'No description',
       },
       {
         key: 'status',
         label: 'Status',
+        width: '10%',
         type: 'tag',
         formatter: (item) => (item.is_active ? 'Active' : 'Inactive'),
         tagColor: (item) => (item.is_active ? 'green' : 'default'),

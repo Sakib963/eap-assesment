@@ -40,9 +40,10 @@ interface ProductFilters {
 }
 
 const mapStatus = (row: ProductRecord): ProductStatus => {
-  if (!row.is_active) return 'inactive';
-  if (row.current_stock <= 0) return 'out_of_stock';
-  return 'active';
+  if (!row.is_active) {
+    return 'inactive';
+  }
+  return row.current_stock <= 0 ? 'out_of_stock' : 'active';
 };
 
 const mapProduct = (row: ProductRecord): ProductView => ({
@@ -142,17 +143,20 @@ export const createProduct = async (payload: {
   price: number;
   current_stock: number;
   min_stock_threshold: number;
-  is_active?: boolean;
+  status?: ProductStatus;
 }): Promise<ProductView> => {
+  const isActive = payload.status !== 'inactive';
+  const stock = payload.status === 'out_of_stock' ? 0 : payload.current_stock;
+
   const inserted = await db<ProductRecord>('products')
     .insert({
       category_id: payload.category_id,
       name: payload.name,
       description: payload.description ?? null,
       price: payload.price,
-      current_stock: payload.current_stock,
+      current_stock: stock,
       min_stock_threshold: payload.min_stock_threshold,
-      is_active: payload.is_active ?? true,
+      is_active: isActive,
     })
     .returning(['id']);
 
@@ -173,24 +177,39 @@ export const updateProduct = async (
     price?: number;
     current_stock?: number;
     min_stock_threshold?: number;
-    is_active?: boolean;
+    status?: ProductStatus;
   }
 ): Promise<ProductView | null> => {
+  const nextPayload: Record<string, unknown> = {
+    updated_at: db.fn.now(),
+  };
+
+  if (payload.category_id !== undefined) nextPayload.category_id = payload.category_id;
+  if (payload.name !== undefined) nextPayload.name = payload.name;
+  if (payload.description !== undefined) nextPayload.description = payload.description;
+  if (payload.price !== undefined) nextPayload.price = payload.price;
+  if (payload.min_stock_threshold !== undefined) nextPayload.min_stock_threshold = payload.min_stock_threshold;
+
+  if (payload.current_stock !== undefined) {
+    nextPayload.current_stock = payload.current_stock;
+  }
+  if (payload.status === 'inactive') {
+    nextPayload.is_active = false;
+  }
+  if (payload.status === 'active' || payload.status === 'out_of_stock') {
+    nextPayload.is_active = true;
+  }
+  if (payload.status === 'out_of_stock') {
+    nextPayload.current_stock = 0;
+  }
+
   const updatedRows = await db<ProductRecord>('products')
     .where({ id })
-    .update({
-      ...payload,
-      updated_at: db.fn.now(),
-    });
+    .update(nextPayload);
 
   if (!updatedRows) {
     return null;
   }
 
   return getProductById(id);
-};
-
-export const deleteProduct = async (id: string): Promise<boolean> => {
-  const deletedRows = await db<ProductRecord>('products').where({ id }).del();
-  return deletedRows > 0;
 };

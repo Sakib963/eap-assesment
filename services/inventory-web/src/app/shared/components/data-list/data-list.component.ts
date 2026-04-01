@@ -7,12 +7,14 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 
 export type ListViewMode = 'table' | 'cards';
 
 export interface SharedListColumn<T> {
   key: keyof T | string;
   label: string;
+  width?: string;
   type?: 'text' | 'currency' | 'tag';
   emptyText?: string;
   formatter?: (item: T) => string;
@@ -29,9 +31,19 @@ export interface SharedListAction<T> {
   onClick: (item: T) => void;
 }
 
+export interface SharedListSerialHint<T> {
+  icon?: string;
+  tooltip: (item: T) => string;
+  visible?: (item: T) => boolean;
+  color?: (item: T) => string;
+}
+
 export interface SharedListConfig<T> {
   title: string;
   columns: SharedListColumn<T>[];
+  serialColumnWidth?: string;
+  serialHint?: SharedListSerialHint<T>;
+  actionsColumnWidth?: string;
   actions?: SharedListAction<T>[];
   defaultView?: ListViewMode;
   cardGridClass?: string;
@@ -51,6 +63,7 @@ export interface SharedListConfig<T> {
     NzPopconfirmModule,
     NzTableModule,
     NzTagModule,
+    NzToolTipModule,
   ],
   templateUrl: './data-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -144,6 +157,43 @@ export class SharedDataListComponent<T extends { id?: string }> {
 
   protected actionIconType(action: SharedListAction<T>): string {
     return action.icon?.trim() || '';
+  }
+
+  protected serialColumnWidth(): string {
+    return this.config.serialColumnWidth ?? '90px';
+  }
+
+  protected actionsColumnWidth(): string | null {
+    if (!(this.config.actions || []).length) {
+      return null;
+    }
+
+    return this.config.actionsColumnWidth ?? null;
+  }
+
+  protected shouldShowSerialHint(item: T): boolean {
+    const hint = this.config.serialHint;
+    if (!hint) {
+      return false;
+    }
+
+    if (!hint.visible) {
+      return true;
+    }
+
+    return hint.visible(item);
+  }
+
+  protected serialHintIcon(item: T): string {
+    return this.config.serialHint?.icon?.trim() || 'exclamation-circle';
+  }
+
+  protected serialHintTooltip(item: T): string {
+    return this.config.serialHint?.tooltip(item) || '';
+  }
+
+  protected serialHintColor(item: T): string {
+    return this.config.serialHint?.color?.(item) || '#d97706';
   }
 
   protected cardGridClass(): string {

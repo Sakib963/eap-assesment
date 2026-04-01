@@ -66,7 +66,7 @@ export interface CreateProductPayload {
   price: number;
   current_stock: number;
   min_stock_threshold: number;
-  is_active?: boolean;
+  status?: ProductStatus;
 }
 
 export interface UpdateProductPayload {
@@ -76,5 +76,5 @@ export interface UpdateProductPayload {
   price?: number;
   current_stock?: number;
   min_stock_threshold?: number;
-  is_active?: boolean;
+  status?: ProductStatus;
 }

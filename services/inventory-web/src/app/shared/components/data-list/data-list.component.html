@@ -28,26 +28,50 @@
   </ng-template>
 
   @if (viewMode === 'table') {
-    <nz-table [nzData]="items" [nzFrontPagination]="false" nzSize="middle" [nzLoading]="loading">
+    <nz-table
+      [nzData]="items"
+      [nzFrontPagination]="false"
+      nzSize="middle"
+      [nzLoading]="loading"
+      nzTableLayout="fixed"
+    >
       <thead>
         <tr>
-          <th class="w-[90px]">SL No</th>
+          <th [style.width]="serialColumnWidth()">SL No</th>
           @for (column of config.columns || []; track column.key) {
-            <th>{{ column.label }}</th>
+            <th [style.width]="column.width || null">{{ column.label }}</th>
           }
           @if ((config.actions || []).length) {
-            <th class="text-right" style="text-align: right;">Actions</th>
+            <th class="text-right" [style.width]="actionsColumnWidth()" style="text-align: right">
+              Actions
+            </th>
           }
         </tr>
       </thead>
       <tbody>
         @for (item of items; track item.id ?? $index; let index = $index) {
           <tr>
-            <td>{{ serialNumber(index) }}</td>
+            <td>
+              <div class="flex justify-start w-full items-center gap-2">
+                <span>{{ serialNumber(index) }}</span>
+                @if (shouldShowSerialHint(item)) {
+                  <nz-icon
+                    [nzType]="serialHintIcon(item)"
+                    nzTheme="outline"
+                    nz-tooltip
+                    nzTooltipPlacement="right"
+                    [nzTooltipTitle]="serialHintTooltip(item)"
+                    [style.color]="serialHintColor(item)"
+                  ></nz-icon>
+                }
+              </div>
+            </td>
             @for (column of config.columns || []; track column.key) {
               <td>
                 @if (column.type === 'tag') {
-                  <nz-tag [nzColor]="resolveTagColor(item, column)">{{ resolveValue(item, column) }}</nz-tag>
+                  <nz-tag [nzColor]="resolveTagColor(item, column)">{{
+                    resolveValue(item, column)
+                  }}</nz-tag>
                 } @else {
                   <span>{{ resolveValue(item, column) }}</span>
                 }
@@ -101,15 +125,32 @@
         <nz-card class="rounded-sm">
           <div class="space-y-2">
             <div class="grid gap-0.5">
-              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">SL No</p>
-              <p class="m-0 text-sm text-[#17343a]">{{ serialNumber(index) }}</p>
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">
+                SL No
+              </p>
+              <div class="flex items-center justify-between gap-2">
+                <p class="m-0 text-sm text-[#17343a]">{{ serialNumber(index) }}</p>
+                @if (shouldShowSerialHint(item)) {
+                  <nz-icon
+                    [nzType]="serialHintIcon(item)"
+                    nzTheme="outline"
+                    nz-tooltip
+                    [nzTooltipTitle]="serialHintTooltip(item)"
+                    [style.color]="serialHintColor(item)"
+                  ></nz-icon>
+                }
+              </div>
             </div>
 
             @for (column of config.columns || []; track column.key) {
               <div class="grid gap-0.5">
-                <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">{{ column.label }}</p>
+                <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">
+                  {{ column.label }}
+                </p>
                 @if (column.type === 'tag') {
-                  <nz-tag class="inline-flex w-fit" [nzColor]="resolveTagColor(item, column)">{{ resolveValue(item, column) }}</nz-tag>
+                  <nz-tag class="inline-flex w-fit" [nzColor]="resolveTagColor(item, column)">{{
+                    resolveValue(item, column)
+                  }}</nz-tag>
                 } @else {
                   <p class="m-0 text-sm text-[#17343a]">{{ resolveValue(item, column) }}</p>
                 }

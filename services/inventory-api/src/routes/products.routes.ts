@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import {
   createProductHandler,
-  deleteProductHandler,
   getProductByIdHandler,
   listProductsHandler,
   updateProductHandler,
@@ -11,7 +10,6 @@ import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import {
   createProductSchema,
-  deleteProductSchema,
   getProductByIdSchema,
   listProductsSchema,
   updateProductSchema,
@@ -25,6 +23,5 @@ productsRouter.get('/', validate(listProductsSchema), asyncHandler(listProductsH
 productsRouter.get('/:id', validate(getProductByIdSchema), asyncHandler(getProductByIdHandler));
 productsRouter.post('/', validate(createProductSchema), asyncHandler(createProductHandler));
 productsRouter.put('/:id', validate(updateProductSchema), asyncHandler(updateProductHandler));
-productsRouter.delete('/:id', validate(deleteProductSchema), asyncHandler(deleteProductHandler));
 
 export default productsRouter;

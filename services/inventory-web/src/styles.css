@@ -90,3 +90,19 @@ body {
 .ant-tooltip-inner {
   border-radius: 4px !important;
 }
+
+/* Drawer content renders in an overlay container, so width overrides must be global. */
+.products-form-drawer nz-input-number,
+.products-form-drawer .ant-input-number,
+.products-form-drawer .ant-input-number-affix-wrapper,
+.products-form-drawer .ant-input-number-input-wrap,
+.products-form-drawer .ant-input-number-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.products-form-drawer .ant-input-number,
+.products-form-drawer .ant-input-number-affix-wrapper {
+  display: inline-flex !important;
+}

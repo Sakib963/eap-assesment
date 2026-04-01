@@ -76,7 +76,7 @@ export const createProductSchema = z.object({
     price: z.coerce.number().positive(),
     current_stock: z.coerce.number().int().min(0),
     min_stock_threshold: z.coerce.number().int().min(0),
-    is_active: z.boolean().optional().default(true),
+    status: z.enum(['active', 'out_of_stock', 'inactive']).optional().default('active'),
   }),
 });
 
@@ -93,17 +93,9 @@ export const updateProductSchema = z.object({
       price: z.coerce.number().positive().optional(),
       current_stock: z.coerce.number().int().min(0).optional(),
       min_stock_threshold: z.coerce.number().int().min(0).optional(),
-      is_active: z.boolean().optional(),
+      status: z.enum(['active', 'out_of_stock', 'inactive']).optional(),
     })
     .refine((body) => Object.values(body).some((value) => value !== undefined), {
       message: 'At least one product field is required for update',
     }),
-});
-
-export const deleteProductSchema = z.object({
-  params: z.object({
-    id: z.string().uuid(),
-  }),
-  query: z.object({}),
-  body: z.object({}),
 });

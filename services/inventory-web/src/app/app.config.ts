@@ -10,6 +10,7 @@ import {
   DeleteOutline,
   DownOutline,
   EditOutline,
+  ExclamationCircleOutline,
   HistoryOutline,
   HomeOutline,
   InboxOutline,
@@ -24,6 +25,7 @@ import {
   ShoppingCartOutline,
   TagsOutline,
   UserOutline,
+  WarningOutline,
 } from '@ant-design/icons-angular/icons';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 import { httpErrorInterceptor } from './core/interceptors/http-error.interceptor';
@@ -57,6 +59,8 @@ export const appConfig: ApplicationConfig = {
       PlusOutline,
       EditOutline,
       DeleteOutline,
+      ExclamationCircleOutline,
+      WarningOutline,
     ]),
     provideRouter(routes)
   ]

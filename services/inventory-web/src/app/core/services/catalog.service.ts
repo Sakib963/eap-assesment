@@ -61,12 +61,6 @@ export class CatalogService {
       .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
   }
 
-  deleteProduct(id: string): Observable<{ deleted: boolean }> {
-    return this.api
-      .delete<ApiResponse<{ deleted: boolean }>>(`/api/v1/products/${id}`)
-      .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
-  }
-
   private unwrap<T>(response: ApiResponse<T>): T {
     if (!response.success) {
       throw new Error(response.error.message);
