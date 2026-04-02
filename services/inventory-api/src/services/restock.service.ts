@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { logActivity } from './activity-log.service.js';
 
 export type RestockPriority = 'low' | 'medium' | 'high';
 export type RestockStatus = 'pending' | 'completed';
@@ -95,7 +96,77 @@ export const listRestockQueue = async (
   };
 };
 
-export const markRestockCompleted = async (id: string): Promise<RestockQueueItemView | null> => {
+export const restockProduct = async (
+  id: string,
+  quantityAdded: number,
+  userId?: string | null
+): Promise<RestockQueueItemView | null> => {
+  const result = await db.transaction(async (trx) => {
+    const existing = (await trx('restock_queue as rq')
+      .join('products as p', 'p.id', 'rq.product_id')
+      .select(
+        'rq.id',
+        'rq.product_id',
+        'rq.quantity_needed',
+        'rq.priority',
+        'rq.status',
+        'rq.created_at',
+        'rq.completed_at',
+        'p.name as product_name',
+        'p.current_stock',
+        'p.min_stock_threshold'
+      )
+      .where('rq.id', id)
+      .andWhere('rq.status', 'pending')
+      .first()) as RestockQueueRow | undefined;
+
+    if (!existing) return null;
+
+    await trx('products')
+      .where({ id: existing.product_id })
+      .update({
+        current_stock: trx.raw('current_stock + ?', [quantityAdded]),
+        updated_at: trx.fn.now(),
+      });
+
+    await trx('restock_queue')
+      .where({ id })
+      .update({ status: 'completed', completed_at: trx.fn.now() });
+
+    const finalRow = (await trx('restock_queue as rq')
+      .join('products as p', 'p.id', 'rq.product_id')
+      .select(
+        'rq.id',
+        'rq.product_id',
+        'rq.quantity_needed',
+        'rq.priority',
+        'rq.status',
+        'rq.created_at',
+        'rq.completed_at',
+        'p.name as product_name',
+        'p.current_stock',
+        'p.min_stock_threshold'
+      )
+      .where('rq.id', id)
+      .first()) as RestockQueueRow | undefined;
+
+    return finalRow ? mapQueueItem(finalRow) : null;
+  });
+
+  if (result) {
+    void logActivity({
+      user_id: userId ?? null,
+      action: `Product "${result.product_name}" restocked with ${quantityAdded} units`,
+      entity_type: 'stock',
+      entity_id: result.product_id,
+      details: { quantity_added: quantityAdded, product_name: result.product_name },
+    });
+  }
+
+  return result;
+};
+
+export const markRestockCompleted = async (id: string, userId?: string | null): Promise<RestockQueueItemView | null> => {
   const updatedRows = await db('restock_queue')
     .where({ id })
     .andWhere({ status: 'pending' })
@@ -125,5 +196,17 @@ export const markRestockCompleted = async (id: string): Promise<RestockQueueItem
     .where('rq.id', id)
     .first()) as RestockQueueRow | undefined;
 
-  return row ? mapQueueItem(row) : null;
+  const result = row ? mapQueueItem(row) : null;
+
+  if (result) {
+    void logActivity({
+      user_id: userId ?? null,
+      action: `Restock completed for product "${result.product_name}"`,
+      entity_type: 'stock',
+      entity_id: id,
+      details: { product_id: result.product_id, product_name: result.product_name },
+    });
+  }
+
+  return result;
 };

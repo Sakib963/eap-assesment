@@ -9,47 +9,59 @@
     </div>
   </nz-card>
 
-  <nz-row [nzGutter]="[14, 14]">
-    @for (metric of stats(); track metric.label) {
-      <nz-col [nzXs]="24" [nzMd]="12" [nzXl]="6">
-        <nz-card class="rounded-sm">
-          <nz-statistic [nzTitle]="metric.label" [nzValue]="metric.value" [nzPrefix]="metric.suffix"></nz-statistic>
+  @if (loading()) {
+    <nz-card>
+      <div class="flex justify-center py-8">
+        <nz-spin nzSize="large"></nz-spin>
+      </div>
+    </nz-card>
+  } @else {
+    <nz-row [nzGutter]="[14, 14]">
+      @for (metric of stats(); track metric.label) {
+        <nz-col [nzXs]="24" [nzMd]="12" [nzXl]="6">
+          <nz-card class="rounded-sm">
+            <nz-statistic [nzTitle]="metric.label" [nzValue]="metric.value" [nzPrefix]="metric.suffix"></nz-statistic>
+          </nz-card>
+        </nz-col>
+      }
+    </nz-row>
+
+    <nz-row [nzGutter]="[14, 14]">
+      <nz-col [nzXs]="24" [nzXl]="14">
+        <nz-card nzTitle="Low Stock — Priority Attention">
+          @if (attentionItems().length === 0) {
+            <p class="m-0 text-[#17343a]/60">All products are adequately stocked.</p>
+          } @else {
+            <nz-table [nzData]="attentionItems()" [nzFrontPagination]="false" nzSize="middle">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Note</th>
+                  <th>Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of attentionItems(); track row.item) {
+                  <tr>
+                    <td>{{ row.item }}</td>
+                    <td>{{ row.note }}</td>
+                    <td>
+                      @if (row.priority === 'high') {
+                        <nz-tag nzColor="red">High</nz-tag>
+                      } @else {
+                        <nz-tag nzColor="orange">Medium</nz-tag>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </nz-table>
+          }
         </nz-card>
       </nz-col>
-    }
-  </nz-row>
 
-  <nz-row [nzGutter]="[14, 14]">
-    <nz-col [nzXs]="24" [nzXl]="14">
-      <nz-card nzTitle="Priority Attention Queue">
-        <nz-table [nzData]="attentionItems()" [nzFrontPagination]="false" nzSize="middle">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Note</th>
-              <th>Priority</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of attentionItems(); track row.item) {
-              <tr>
-                <td>{{ row.item }}</td>
-                <td>{{ row.note }}</td>
-                <td>
-                  @if (row.priority === 'high') {
-                    <nz-tag nzColor="red">High</nz-tag>
-                  } @else {
-                    <nz-tag nzColor="orange">Medium</nz-tag>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </nz-table>
-      </nz-card>
-    </nz-col>
-
-    <nz-col [nzXs]="24" [nzXl]="10">
-    </nz-col>
-  </nz-row>
+      <nz-col [nzXs]="24" [nzXl]="10">
+      </nz-col>
+    </nz-row>
+  }
 </section>

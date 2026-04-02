@@ -26,9 +26,21 @@ export const routes: Routes = [
 				title: 'Categories',
 			},
 			{
+				path: 'orders/create',
+				loadComponent: () =>
+					import('./features/orders/create/orders-create.page').then((m) => m.OrdersCreatePage),
+				title: 'Create Order',
+			},
+			{
+				path: 'orders/:id',
+				loadComponent: () =>
+					import('./features/orders/view/orders-view.page').then((m) => m.OrdersViewPage),
+				title: 'Order View',
+			},
+			{
 				path: 'orders',
 				loadComponent: () =>
-					import('./features/orders/orders.page').then((m) => m.OrdersPage),
+					import('./features/orders/list/orders.page').then((m) => m.OrdersPage),
 				title: 'Orders',
 			},
 			{

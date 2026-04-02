@@ -6,12 +6,21 @@
   </nz-card>
 
   <nz-card nzTitle="Recent Activity">
-    <nz-timeline>
-      @for (activity of activities; track activity) {
-        <nz-timeline-item>
-          <p class="m-0 font-semibold text-[#1d3d42]">{{ activity }}</p>
-        </nz-timeline-item>
-      }
-    </nz-timeline>
+    @if (loading()) {
+      <div class="flex justify-center py-8">
+        <nz-spin nzSize="large"></nz-spin>
+      </div>
+    } @else if (activities().length === 0) {
+      <p class="m-0 text-[#17343a]/60">No activity recorded yet. Actions like creating orders and restocking products will appear here.</p>
+    } @else {
+      <nz-timeline>
+        @for (entry of activities(); track entry.id) {
+          <nz-timeline-item>
+            <span class="mr-2 text-[0.8rem] text-[#17343a]/50">{{ formatTime(entry.created_at) }}</span>
+            <span class="font-semibold text-[#1d3d42]">{{ entry.action }}</span>
+          </nz-timeline-item>
+        }
+      </nz-timeline>
+    }
   </nz-card>
 </section>

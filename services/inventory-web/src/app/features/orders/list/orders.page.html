@@ -1,0 +1,40 @@
+<section class="grid gap-5 lg:gap-6">
+  <nz-card
+    class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]"
+    [nzBordered]="false"
+  >
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex flex-col gap-2">
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">
+          Order Desk
+        </p>
+        <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Orders</h1>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">
+          Create transactional orders with stock-aware validation and conflict-safe workflows.
+        </p>
+      </div>
+      <button nz-button nzType="primary" nzSize="large" (click)="goToCreatePage()">
+        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+        Create New Order
+      </button>
+    </div>
+  </nz-card>
+
+  <app-shared-filter-panel
+    title="Order Filters"
+    [form]="filterForm"
+    [fields]="filterFields"
+    [searchDebounceMs]="300"
+    (filtersChange)="onFiltersChange()"
+  ></app-shared-filter-panel>
+
+  <app-shared-data-list
+    [config]="orderListConfig"
+    [items]="orders()"
+    [loading]="loading()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [total]="totalOrders()"
+    (pageChange)="onPageChange($event)"
+  ></app-shared-data-list>
+</section>

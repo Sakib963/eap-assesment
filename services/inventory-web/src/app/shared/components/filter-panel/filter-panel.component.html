@@ -29,14 +29,21 @@
         }
 
         @if (field.type === 'date') {
-          <input
-            nz-input
+          <nz-date-picker
             nzSize="large"
             class="w-full"
             [formControlName]="field.key"
-            [placeholder]="field.placeholder || 'YYYY-MM-DD'"
-            type="date"
-          />
+            [nzPlaceHolder]="field.placeholder || 'YYYY-MM-DD'"
+          ></nz-date-picker>
+        }
+
+        @if (field.type === 'date-range') {
+          <nz-range-picker
+            nzSize="large"
+            class="w-full"
+            [formControlName]="field.key"
+            [nzPlaceHolder]="[field.placeholder || 'Start date', 'End date']"
+          ></nz-range-picker>
         }
       </div>
     }

@@ -36,6 +36,11 @@ export const createOrderHandler = async (req: Request, res: Response): Promise<v
 
   const order = await createOrder({
     userId: req.user.userId,
+    customer_name: String(req.body.customer_name ?? ''),
+    customer_phone: String(req.body.customer_phone ?? ''),
+    customer_address: req.body.customer_address ?? null,
+    delivery_instruction: req.body.delivery_instruction ?? null,
+    discount_amount: Number(req.body.discount_amount ?? 0),
     items: req.body.items,
   });
 
@@ -45,8 +50,9 @@ export const createOrderHandler = async (req: Request, res: Response): Promise<v
 export const updateOrderStatusHandler = async (req: Request, res: Response): Promise<void> => {
   const orderId = String(req.params.id);
   const status = String(req.body.status) as OrderStatus;
+  const userId = req.user?.userId ?? null;
 
-  const updated = await updateOrderStatus(orderId, status);
+  const updated = await updateOrderStatus(orderId, status, userId);
   if (!updated) {
     throw createHttpError(404, 'Order not found', 'ORDER_NOT_FOUND');
   }

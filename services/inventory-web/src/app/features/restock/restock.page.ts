@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 import type { PaginatedResponse } from '../../core/models/catalog.model';
 import type { RestockPriority, RestockQueueItem, RestockStatus } from '../../core/models/orders.model';
 import { OrdersService } from '../../core/services/orders.service';
@@ -16,17 +20,22 @@ import {
   SharedFilterField,
   SharedFilterPanelComponent,
 } from '../../shared/components/filter-panel/filter-panel.component';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
 
 @Component({
   selector: 'app-restock-page',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
     NzIconModule,
+    NzInputNumberModule,
+    NzModalModule,
+    NzTagModule,
+    NzDrawerModule,
     SharedDataListComponent,
     SharedFilterPanelComponent,
   ],
@@ -44,6 +53,12 @@ export class RestockPage {
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
   protected readonly loading = signal(false);
+
+  protected readonly restockModalOpen = signal(false);
+  protected readonly rulesDrawerOpen = signal(false);
+  protected readonly restockingItem = signal<RestockQueueItem | null>(null);
+  protected readonly restockQuantity = signal<number>(1);
+  protected readonly submittingRestock = signal(false);
 
   protected readonly filterForm = this.formBuilder.group({
     status: ['' as RestockStatus | ''],
@@ -86,26 +101,10 @@ export class RestockPage {
     cardGridClass: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
     emptyText: 'No restock items found.',
     columns: [
-      {
-        key: 'product_name',
-        label: 'Product',
-        width: '24%',
-      },
-      {
-        key: 'current_stock',
-        label: 'Current Stock',
-        width: '12%',
-      },
-      {
-        key: 'min_stock_threshold',
-        label: 'Threshold',
-        width: '12%',
-      },
-      {
-        key: 'quantity_needed',
-        label: 'Needed',
-        width: '12%',
-      },
+      { key: 'product_name', label: 'Product', width: '24%' },
+      { key: 'current_stock', label: 'Current Stock', width: '12%' },
+      { key: 'min_stock_threshold', label: 'Threshold', width: '12%' },
+      { key: 'quantity_needed', label: 'Needed', width: '12%' },
       {
         key: 'priority',
         label: 'Priority',
@@ -129,11 +128,11 @@ export class RestockPage {
     ],
     actions: [
       {
-        label: 'Complete',
-        icon: 'check-circle',
-        type: 'default',
+        label: 'Restock',
+        icon: 'plus-circle',
+        type: 'primary',
         visible: (item) => item.status === 'pending',
-        onClick: (item) => this.completeRestock(item.id),
+        onClick: (item) => this.openRestockModal(item),
       },
     ],
   };
@@ -144,9 +143,7 @@ export class RestockPage {
 
   protected loadQueue(): void {
     this.loading.set(true);
-
     const { status, priority } = this.filterForm.getRawValue();
-
     this.ordersService
       .listRestockQueue({
         page: this.page(),
@@ -176,15 +173,48 @@ export class RestockPage {
     this.loadQueue();
   }
 
-  protected completeRestock(id: string): void {
-    this.ordersService.markRestockCompleted(id).subscribe({
-      next: () => {
-        this.message.success('Restock queue item marked as completed.');
-        this.loadQueue();
-      },
-      error: (error: Error) => {
-        this.message.error(error.message || 'Failed to update restock status');
-      },
-    });
+  protected openRestockModal(item: RestockQueueItem): void {
+    this.restockingItem.set(item);
+    this.restockQuantity.set(Math.max(1, item.quantity_needed));
+    this.restockModalOpen.set(true);
+  }
+
+  protected closeRestockModal(): void {
+    this.restockModalOpen.set(false);
+    this.restockingItem.set(null);
+    this.restockQuantity.set(1);
+  }
+
+  protected openRulesDrawer(): void {
+    this.rulesDrawerOpen.set(true);
+  }
+
+  protected closeRulesDrawer(): void {
+    this.rulesDrawerOpen.set(false);
+  }
+
+  protected confirmRestock(): void {
+    const item = this.restockingItem();
+    const qty = this.restockQuantity();
+    if (!item || qty < 1) return;
+
+    this.submittingRestock.set(true);
+    this.ordersService
+      .restockProduct(item.id, { quantity_added: qty })
+      .pipe(finalize(() => this.submittingRestock.set(false)))
+      .subscribe({
+        next: () => {
+          this.message.success(`Added ${qty} units to "${item.product_name}".`);
+          this.closeRestockModal();
+          this.loadQueue();
+        },
+        error: (error: Error) => {
+          this.message.error(error.message || 'Failed to restock product');
+        },
+      });
+  }
+
+  protected onRestockQuantityChange(value: number | null): void {
+    this.restockQuantity.set(Math.max(1, value ?? 1));
   }
 }

@@ -4,10 +4,13 @@ import { Observable, catchError, map, throwError } from 'rxjs';
 import type { ApiResponse } from '../models/api.model';
 import type { PaginatedResponse } from '../models/catalog.model';
 import type {
+  ActivityLogEntry,
   CreateOrderPayload,
+  DashboardMetrics,
   Order,
   OrderListParams,
   RestockListParams,
+  RestockProductPayload,
   RestockQueueItem,
   UpdateOrderStatusPayload,
 } from '../models/orders.model';
@@ -50,6 +53,24 @@ export class OrdersService {
   markRestockCompleted(id: string): Observable<RestockQueueItem> {
     return this.api
       .put<Record<string, never>, ApiResponse<RestockQueueItem>>(`/api/v1/restock/${id}/complete`, {})
+      .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
+  }
+
+  restockProduct(id: string, payload: RestockProductPayload): Observable<RestockQueueItem> {
+    return this.api
+      .put<RestockProductPayload, ApiResponse<RestockQueueItem>>(`/api/v1/restock/${id}/restock`, payload)
+      .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
+  }
+
+  getDashboard(): Observable<DashboardMetrics> {
+    return this.api
+      .getWrapped<DashboardMetrics>('/api/v1/dashboard')
+      .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
+  }
+
+  getActivityLogs(limit = 10): Observable<ActivityLogEntry[]> {
+    return this.api
+      .getWrapped<ActivityLogEntry[]>('/api/v1/activity-logs', { limit })
       .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
   }
 

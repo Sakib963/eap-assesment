@@ -1,0 +1,166 @@
+<section class="grid gap-5 lg:gap-6">
+  <!-- Header -->
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Order Detail</p>
+        @if (order(); as o) {
+          <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">
+            Order #{{ shortId(o.id) }}
+          </h1>
+          <p class="m-0 text-[0.86rem] text-[#17343a]/70">
+            Placed {{ o.created_at | date: 'mediumDate' }}
+            &nbsp;·&nbsp;
+            <nz-tag [nzColor]="statusColor(o.status)">{{ formatStatus(o.status) }}</nz-tag>
+          </p>
+        } @else {
+          <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Order View</h1>
+        }
+      </div>
+      <button nz-button nzType="default" nzSize="large" (click)="goBack()">
+        <nz-icon nzType="left" nzTheme="outline"></nz-icon>
+        Back to Orders
+      </button>
+    </div>
+  </nz-card>
+
+  @if (loading()) {
+    <nz-card>
+      <div class="flex items-center gap-2 text-[#33555b]">
+        <nz-icon nzType="loading" nzTheme="outline"></nz-icon>
+        Loading order details…
+      </div>
+    </nz-card>
+  } @else if (order(); as o) {
+
+    <!-- Lifecycle stepper -->
+    <nz-card nzTitle="Order Lifecycle">
+      @if (o.status === 'cancelled') {
+        <div class="mb-4 rounded border border-[#f0b8b8] bg-[#fff6f6] px-4 py-3 text-sm font-medium text-[#b42318]">
+          <nz-icon nzType="stop" nzTheme="outline" class="mr-2"></nz-icon>
+          This order has been cancelled and cannot be advanced further.
+        </div>
+      } @else {
+        <nz-steps
+          [nzCurrent]="stepsCurrentIndex()"
+          [nzStatus]="stepsStatus()"
+          nzSize="small"
+          class="mb-6 overflow-x-auto"
+        >
+          @for (step of lifecycleSteps; track step) {
+            <nz-step [nzTitle]="formatStatus(step)"></nz-step>
+          }
+        </nz-steps>
+      }
+
+      <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        @if (canAdvanceLifecycle()) {
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="large"
+            class="w-full sm:w-auto"
+            [nzLoading]="updating()"
+            (click)="advanceLifecycle()"
+          >
+            <nz-icon nzType="arrow-right" nzTheme="outline"></nz-icon>
+            {{ nextActionLabel() }}
+          </button>
+        }
+        @if (canCancelOrder()) {
+          <button
+            nz-button
+            nzDanger
+            nzType="default"
+            nzSize="large"
+            class="w-full sm:w-auto"
+            [disabled]="updating()"
+            (click)="cancelOrder()"
+          >
+            <nz-icon nzType="stop" nzTheme="outline"></nz-icon>
+            Cancel Order
+          </button>
+        }
+      </div>
+    </nz-card>
+
+    <!-- Main content: customer + items stacked on mobile, side-by-side on xl -->
+    <div class="grid gap-5 xl:grid-cols-6">
+      <div class="grid gap-4 xl:col-span-4">
+
+        <!-- Customer info -->
+        <nz-card nzTitle="Customer Information">
+          <div class="grid grid-cols-1 gap-4 text-sm text-[#17343a] sm:grid-cols-2">
+            <div>
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Name</p>
+              <p class="m-0 mt-1">{{ o.customer_name }}</p>
+            </div>
+            <div>
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Phone</p>
+              <p class="m-0 mt-1">{{ o.customer_phone }}</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Address</p>
+              <p class="m-0 mt-1">{{ o.customer_address || '—' }}</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Delivery Instruction</p>
+              <p class="m-0 mt-1">{{ o.delivery_instruction || '—' }}</p>
+            </div>
+          </div>
+        </nz-card>
+
+        <!-- Order items -->
+        <nz-card nzTitle="Products">
+          <div class="grid gap-2">
+            @for (item of o.items || []; track item.id) {
+              <div class="flex flex-col gap-1 rounded border border-[#e1e9e8] bg-white p-3 text-sm text-[#17343a] sm:flex-row sm:items-center sm:gap-2">
+                <div class="flex-1 font-medium">{{ item.product_name }}</div>
+                <div class="flex gap-4 text-[#35575c] sm:gap-3">
+                  <span>Qty: {{ item.quantity }}</span>
+                  <span>@{{ item.unit_price.toFixed(2) }}</span>
+                </div>
+                <div class="font-semibold sm:min-w-[80px] sm:text-right">${{ item.line_total.toFixed(2) }}</div>
+              </div>
+            }
+          </div>
+        </nz-card>
+      </div>
+
+      <!-- Pricing summary — full width on mobile, sticky sidebar on xl -->
+      <div class="xl:col-span-2">
+        <nz-card nzTitle="Order Summary" class="xl:sticky xl:top-4">
+          <div class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-1">
+            <div>
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Order ID</p>
+              <p class="m-0 mt-1 break-all font-mono text-xs">{{ o.id }}</p>
+            </div>
+            <div>
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Status</p>
+              <nz-tag class="mt-1 inline-flex" [nzColor]="statusColor(o.status)">{{ formatStatus(o.status) }}</nz-tag>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <p class="m-0 text-xs font-semibold uppercase tracking-[0.02em] text-[#244046]">Date</p>
+              <p class="m-0 mt-1">{{ o.created_at | date: 'medium' }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded border border-[#d6e0df] bg-[#fbfdfd] p-3 text-sm">
+            <div class="flex items-center justify-between py-1">
+              <span class="text-[#35575c]">Subtotal</span>
+              <span class="font-semibold text-[#17343a]">${{ o.subtotal_amount.toFixed(2) }}</span>
+            </div>
+            <div class="flex items-center justify-between py-1">
+              <span class="text-[#35575c]">Discount</span>
+              <span class="font-semibold text-[#17343a]">-${{ o.discount_amount.toFixed(2) }}</span>
+            </div>
+            <div class="mt-1 flex items-center justify-between border-t border-[#d6e0df] pt-2">
+              <span class="font-semibold text-[#17343a]">Grand Total</span>
+              <span class="text-base font-extrabold text-[#17343a]">${{ o.total_amount.toFixed(2) }}</span>
+            </div>
+          </div>
+        </nz-card>
+      </div>
+    </div>
+  }
+</section>

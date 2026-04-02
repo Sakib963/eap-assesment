@@ -1,20 +1,41 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTimelineModule } from 'ng-zorro-antd/timeline';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { OrdersService } from '../../core/services/orders.service';
+import type { ActivityLogEntry } from '../../core/models/orders.model';
 
 @Component({
   selector: 'app-activity-page',
   standalone: true,
-  imports: [NzCardModule, NzTimelineModule],
+  imports: [NzCardModule, NzTimelineModule, NzSpinModule],
   templateUrl: './activity.page.html',
   styleUrl: './activity.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ActivityPage {
-  protected readonly activities = [
-    'Order ORD-1003 created and stock deducted',
-    'Restock queue item generated for A4 Paper Ream',
-    'Product Wireless Mouse stock updated to 3',
-    'Demo login performed by demo@inventory.local',
-  ];
+export class ActivityPage implements OnInit {
+  private readonly ordersService = inject(OrdersService);
+
+  protected readonly loading = signal(true);
+  protected readonly activities = signal<ActivityLogEntry[]>([]);
+
+  ngOnInit(): void {
+    this.ordersService.getActivityLogs(10).subscribe({
+      next: (logs) => {
+        this.activities.set(logs);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
+    });
+  }
+
+  protected formatTime(isoString: string): string {
+    try {
+      return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  }
 }

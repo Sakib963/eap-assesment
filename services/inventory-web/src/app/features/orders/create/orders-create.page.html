@@ -1,0 +1,225 @@
+<section class="grid gap-5 lg:gap-6">
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex flex-col gap-2">
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">POS Checkout</p>
+        <h1 class="my-1 text-[clamp(1.4rem,2.8vw,1.9rem)] font-extrabold text-[#17343a]">Create Order</h1>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">Build order items, validate stock in real time, and review the live invoice before confirmation.</p>
+      </div>
+      <button nz-button nzType="default" nzSize="large" (click)="goBackToOrders()">
+        <nz-icon nzType="left" nzTheme="outline"></nz-icon>
+        Back to Orders
+      </button>
+    </div>
+  </nz-card>
+
+  <div class="grid items-start gap-5 xl:grid-cols-6">
+    <div class="grid gap-4 xl:col-span-4">
+      <nz-card nzTitle="Customer Details">
+        <form nz-form [nzLayout]="'vertical'" [formGroup]="orderForm" class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <nz-form-item>
+            <nz-form-label [nzRequired]="true">Customer Name</nz-form-label>
+            <nz-form-control [nzValidateStatus]="customerNameValidateStatus()" [nzErrorTip]="customerNameErrorTip()">
+              <input nz-input nzSize="large" class="w-full" formControlName="customer_name" placeholder="Enter customer name" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label [nzRequired]="true">Phone</nz-form-label>
+            <nz-form-control [nzValidateStatus]="customerPhoneValidateStatus()" [nzErrorTip]="customerPhoneErrorTip()">
+              <input nz-input nzSize="large" class="w-full" formControlName="customer_phone" placeholder="Enter phone number" />
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>Address</nz-form-label>
+            <nz-form-control [nzValidateStatus]="orderForm.get('customer_address')!">
+              <textarea nz-input rows="3" class="w-full" formControlName="customer_address" placeholder="Delivery address (optional)"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>Delivery Instruction</nz-form-label>
+            <nz-form-control [nzValidateStatus]="orderForm.get('delivery_instruction')!">
+              <textarea nz-input rows="3" class="w-full" formControlName="delivery_instruction" placeholder="Landmark, gate code, preferred time (optional)"></textarea>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </nz-card>
+
+      <nz-card>
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h3 class="m-0 text-base font-semibold text-[#17343a]">Products</h3>
+          <button nz-button nzType="default" nzSize="large" type="button" (click)="openItemModal()">
+            <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+            Add Product
+          </button>
+        </div>
+
+        @if (!isMobileViewport()) {
+          <nz-table [nzData]="orderItems()" [nzFrontPagination]="false" nzTableLayout="fixed" nzSize="middle">
+            <thead>
+              <tr>
+                <th style="width: 30%">Product</th>
+                <th style="width: 18%">Category</th>
+                <th style="width: 12%">Price</th>
+                <th style="width: 12%">Qty</th>
+                <th style="width: 14%">Stock</th>
+                <th style="width: 14%" class="text-right">Line Total</th>
+                <th style="width: 10%" class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of orderItems(); track item.product_id) {
+                <tr>
+                  <td>{{ item.product_name }}</td>
+                  <td>{{ item.category_name }}</td>
+                  <td>${{ item.unit_price.toFixed(2) }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td><span [class.text-red-600]="item.quantity > item.available_stock">{{ item.available_stock }}</span></td>
+                  <td class="text-right font-semibold">${{ item.line_total.toFixed(2) }}</td>
+                  <td class="text-right">
+                    <button nz-button nzType="default" nzSize="large" nzDanger type="button" (click)="removeItem(item.product_id)">
+                      <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </nz-table>
+        } @else {
+          <div class="grid gap-3 sm:grid-cols-2">
+            @for (item of orderItems(); track item.product_id) {
+              <nz-card class="rounded border border-[#d6e0df]">
+                <div class="grid gap-1 text-sm text-[#17343a]">
+                  <p class="m-0 font-semibold">{{ item.product_name }}</p>
+                  <p class="m-0 text-[#35575c]">{{ item.category_name }}</p>
+                  <p class="m-0">Qty: {{ item.quantity }} | Stock: {{ item.available_stock }}</p>
+                  <p class="m-0 font-semibold">${{ item.line_total.toFixed(2) }}</p>
+                  <div class="pt-1">
+                    <button nz-button nzType="default" nzSize="large" nzDanger type="button" (click)="removeItem(item.product_id)">
+                      <nz-icon nzType="delete" nzTheme="outline"></nz-icon>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </nz-card>
+            }
+          </div>
+        }
+
+        @if (itemValidationMessage()) {
+          <div class="rounded border border-[#f0b8b8] bg-[#fff6f6] px-4 py-3 text-sm text-[#b42318]">
+            {{ itemValidationMessage() }}
+          </div>
+        }
+      </nz-card>
+    </div>
+
+    <div class="xl:col-span-2">
+      <nz-card nzTitle="Live Invoice" class="xl:sticky xl:top-4">
+        <div class="space-y-2 text-sm">
+          @for (item of orderItems(); track item.product_id) {
+            <div class="flex items-start justify-between gap-3 rounded border border-[#e1e9e8] bg-[#fbfdfd] p-2">
+              <div>
+                <p class="m-0 font-medium text-[#17343a]">{{ item.product_name }}</p>
+                <p class="m-0 text-xs text-[#4a666b]">{{ item.quantity }} x ${{ item.unit_price.toFixed(2) }}</p>
+              </div>
+              <p class="m-0 font-semibold text-[#17343a]">${{ item.line_total.toFixed(2) }}</p>
+            </div>
+          }
+          @if (orderItems().length === 0) {
+            <div class="my-4 rounded border border-dashed border-[#bfd2d4] bg-[#f8fbfb] px-3 py-2 text-sm text-[#45656a]">
+              No item is added.
+            </div>
+          }
+        </div>
+
+        <div [formGroup]="orderForm" nz-form [nzLayout]="'vertical'" class="mt-4">
+          <nz-form-item>
+            <nz-form-label>Discount Amount</nz-form-label>
+            <nz-form-control [nzValidateStatus]="discountValidateStatus()" [nzErrorTip]="discountErrorTip()">
+              <nz-input-number [nzMin]="0" nzSize="large" formControlName="discount_amount" [style.width.%]="100" class="w-full" placeholder="0"></nz-input-number>
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div class="mt-4 rounded border border-[#d6e0df] bg-[#fbfdfd] p-3 text-sm">
+          <div class="flex items-center justify-between py-1">
+            <span class="text-[#35575c]">Subtotal</span>
+            <span class="font-semibold text-[#17343a]">${{ subtotalAmount().toFixed(2) }}</span>
+          </div>
+          <div class="flex items-center justify-between py-1">
+            <span class="text-[#35575c]">Discount</span>
+            <span class="font-semibold text-[#17343a]">-${{ discountAmount().toFixed(2) }}</span>
+          </div>
+          <div class="mt-1 flex items-center justify-between border-t border-[#d6e0df] pt-2">
+            <span class="font-semibold text-[#17343a]">Grand Total</span>
+            <span class="text-base font-extrabold text-[#17343a]">${{ grandTotal().toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="mt-4 flex gap-2">
+          <button nz-button nzType="default" nzSize="large" class="flex-1" (click)="goBackToOrders()">
+            <nz-icon nzType="close" nzTheme="outline"></nz-icon>
+            Cancel
+          </button>
+          <button nz-button nzType="primary" nzSize="large" class="flex-1" [nzLoading]="saving()" (click)="submitOrder()">
+            <nz-icon nzType="check-circle" nzTheme="outline"></nz-icon>
+            Confirm
+          </button>
+        </div>
+      </nz-card>
+    </div>
+  </div>
+
+  <nz-modal
+    [nzVisible]="itemModalVisible()"
+    nzTitle="Add Product"
+    [nzOkDisabled]="itemForm.invalid || exceedsModalStock"
+    nzOkText="Add Item"
+    nzCancelText="Cancel"
+    (nzOnCancel)="closeItemModal()"
+    (nzOnOk)="addItemFromModal()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [nzLayout]="'vertical'" [formGroup]="itemForm" class="grid gap-3">
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Product</nz-form-label>
+          <nz-form-control [nzValidateStatus]="itemForm.get('product_id')!" [nzErrorTip]="productErrorTip()">
+            <nz-select class="w-full" nzSize="large" formControlName="product_id" nzPlaceHolder="Select product" [nzLoading]="loadingProducts()">
+              @for (group of groupedProductOptions(); track group.category) {
+                <nz-option-group [nzLabel]="group.category">
+                  @for (option of group.options; track option.value) {
+                    <nz-option [nzValue]="option.value" [nzLabel]="option.label" [nzDisabled]="option.disabled"></nz-option>
+                  }
+                </nz-option-group>
+              }
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Quantity</nz-form-label>
+          <nz-form-control [nzValidateStatus]="itemForm.get('quantity')!" [nzErrorTip]="quantityErrorTip()">
+            <nz-input-number [nzMin]="1" nzSize="large" formControlName="quantity" [style.width.%]="100" class="w-full" placeholder="1"></nz-input-number>
+          </nz-form-control>
+        </nz-form-item>
+
+        @if (selectedProductFromModal; as product) {
+          <div class="rounded border border-[#d6e0df] bg-[#fbfdfd] p-3 text-sm text-[#17343a]">
+            <div class="flex items-center justify-between"><span>Unit Price</span><span class="font-semibold">${{ product.price.toFixed(2) }}</span></div>
+            <div class="flex items-center justify-between"><span>Available Stock</span><span class="font-semibold">{{ product.current_stock }}</span></div>
+            <div class="mt-2 flex items-center justify-between border-t border-[#d6e0df] pt-2"><span>Line Total</span><span class="font-extrabold">${{ modalLineTotal.toFixed(2) }}</span></div>
+          </div>
+        }
+
+        @if (exceedsModalStock && selectedProductFromModal; as invalidProduct) {
+          <div class="rounded border border-[#f0b8b8] bg-[#fff6f6] px-3 py-2 text-sm text-[#b42318]">
+            Only {{ invalidProduct.current_stock }} items available in stock.
+          </div>
+        }
+      </form>
+    </ng-container>
+  </nz-modal>
+</section>

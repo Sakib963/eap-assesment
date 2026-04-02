@@ -5,6 +5,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzSelectModule } from 'ng-zorro-antd/select';
@@ -17,11 +18,11 @@ export interface SharedFilterOption {
 export interface SharedFilterField {
   key: string;
   label: string;
-  type: 'search' | 'select' | 'date';
+  type: 'search' | 'select' | 'date' | 'date-range';
   placeholder?: string;
   options?: SharedFilterOption[];
   allowClear?: boolean;
-  defaultValue?: string;
+  defaultValue?: unknown;
 }
 
 @Component({
@@ -32,6 +33,7 @@ export interface SharedFilterField {
     ReactiveFormsModule,
     NzButtonModule,
     NzCardModule,
+    NzDatePickerModule,
     NzIconModule,
     NzInputModule,
     NzSelectModule,
