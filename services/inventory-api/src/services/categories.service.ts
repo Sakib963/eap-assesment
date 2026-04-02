@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { logActivity } from './activity-log.service.js';
 
 export interface CategoryRecord {
   id: string;
@@ -80,7 +81,10 @@ export const listCategories = async (filters: CategoryFilters): Promise<{ items:
   };
 };
 
-export const createCategory = async (payload: { name: string; description?: string | null; is_active?: boolean }): Promise<CategoryRecord> => {
+export const createCategory = async (
+  payload: { name: string; description?: string | null; is_active?: boolean },
+  userId?: string | null
+): Promise<CategoryRecord> => {
   const withStatusColumn = await hasIsActiveColumn();
 
   const insertPayload: Record<string, unknown> = {
@@ -100,12 +104,22 @@ export const createCategory = async (payload: { name: string; description?: stri
         : ['id', 'name', 'description', 'created_at', 'updated_at']
     );
 
-  return normalizeCategoryRecord(inserted[0] as Partial<CategoryRecord>);
+  const result = normalizeCategoryRecord(inserted[0] as Partial<CategoryRecord>);
+
+  void logActivity({
+    user_id: userId ?? null,
+    action: `Category "${result.name}" created`,
+    entity_type: 'category',
+    entity_id: result.id,
+  });
+
+  return result;
 };
 
 export const updateCategory = async (
   id: string,
-  payload: { name?: string; description?: string | null; is_active?: boolean }
+  payload: { name?: string; description?: string | null; is_active?: boolean },
+  userId?: string | null
 ): Promise<CategoryRecord | null> => {
   const withStatusColumn = await hasIsActiveColumn();
 
@@ -139,11 +153,31 @@ export const updateCategory = async (
     return null;
   }
 
-  return normalizeCategoryRecord(row);
+  const result = normalizeCategoryRecord(row);
+
+  void logActivity({
+    user_id: userId ?? null,
+    action: `Category "${result.name}" updated`,
+    entity_type: 'category',
+    entity_id: result.id,
+  });
+
+  return result;
 };
 
-export const deleteCategory = async (id: string): Promise<boolean> => {
+export const deleteCategory = async (id: string, userId?: string | null): Promise<boolean> => {
+  const existing = await db<CategoryRecord>('categories').where({ id }).first();
   const deletedRows = await db<CategoryRecord>('categories').where({ id }).del();
+
+  if (deletedRows > 0 && existing) {
+    void logActivity({
+      user_id: userId ?? null,
+      action: `Category "${existing.name}" deleted`,
+      entity_type: 'category',
+      entity_id: id,
+    });
+  }
+
   return deletedRows > 0;
 };
 

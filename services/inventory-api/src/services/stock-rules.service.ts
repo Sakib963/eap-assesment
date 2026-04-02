@@ -1,7 +1,9 @@
 import type { Knex } from 'knex';
+import { logActivity } from './activity-log.service.js';
 
 export interface ProductStockSnapshot {
   id: string;
+  name?: string;
   current_stock: number;
   min_stock_threshold: number;
   is_active: boolean;
@@ -63,6 +65,20 @@ export const syncRestockQueueForProduct = async (
     quantity_needed: quantityNeeded,
     priority,
     status: 'pending',
+  });
+
+  void logActivity({
+    user_id: null,
+    action: product.name
+      ? `Product "${product.name}" auto-added to restock queue`
+      : 'Product auto-added to restock queue',
+    entity_type: 'stock',
+    entity_id: product.id,
+    details: {
+      quantity_needed: quantityNeeded,
+      priority,
+      trigger: 'stock_threshold',
+    },
   });
 };
 

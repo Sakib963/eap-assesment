@@ -65,6 +65,13 @@ export const routes: Routes = [
 		canActivate: [guestOnlyGuard],
 	},
 	{
+		path: 'auth/signup',
+		loadComponent: () =>
+			import('./features/auth/signup/signup.page').then((m) => m.SignupPage),
+		title: 'Sign Up',
+		canActivate: [guestOnlyGuard],
+	},
+	{
 		path: '**',
 		redirectTo: '',
 	},

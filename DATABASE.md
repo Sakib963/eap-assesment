@@ -76,7 +76,7 @@ Customer orders.
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
 | `user_id` | UUID | NOT NULL, FK(users) CASCADE | Order creator |
-| `status` | ENUM('pending', 'completed', 'cancelled') | NOT NULL, DEFAULT 'pending' | Order state |
+| `status` | ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') | NOT NULL, DEFAULT 'pending' | Order state |
 | `total_amount` | DECIMAL(12,2) | NOT NULL, DEFAULT 0 | Sum of all items |
 | `created_at` | TIMESTAMP | DEFAULT NOW() | Order date |
 | `updated_at` | TIMESTAMP | DEFAULT NOW() | Last modification |
@@ -86,6 +86,8 @@ Customer orders.
 **Relations**:
 - Belongs to: users
 - Has many: order_items
+
+**Lifecycle semantics**: pending -> confirmed -> shipped -> delivered, with cancellation as terminal state when allowed by business rules.
 
 ---
 

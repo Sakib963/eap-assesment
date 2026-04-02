@@ -467,7 +467,7 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderView> =
 
     const refreshedProducts = await trx<ProductLockRow>('products')
       .whereIn('id', productIds)
-      .select('id', 'current_stock', 'min_stock_threshold', 'is_active');
+      .select('id', 'name', 'current_stock', 'min_stock_threshold', 'is_active');
 
     await syncRestockQueueForProducts(trx, refreshedProducts);
 
@@ -546,7 +546,7 @@ export const updateOrderStatus = async (
     if (affectedProductIds.size > 0) {
       const productRows = await trx<ProductLockRow>('products')
         .whereIn('id', Array.from(affectedProductIds))
-        .select('id', 'current_stock', 'min_stock_threshold', 'is_active');
+        .select('id', 'name', 'current_stock', 'min_stock_threshold', 'is_active');
 
       await syncRestockQueueForProducts(trx, productRows);
     }

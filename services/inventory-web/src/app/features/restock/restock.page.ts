@@ -131,6 +131,7 @@ export class RestockPage {
         label: 'Restock',
         icon: 'plus-circle',
         type: 'primary',
+        visible: (item) => item.status === 'pending',
         onClick: (item) => this.openRestockModal(item),
       },
     ],

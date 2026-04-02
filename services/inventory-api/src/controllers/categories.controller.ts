@@ -50,7 +50,7 @@ export const createCategoryHandler = async (req: Request, res: Response): Promis
     throw createHttpError(409, 'Category name already exists', 'CATEGORY_NAME_EXISTS');
   }
 
-  const category = await createCategory(req.body);
+  const category = await createCategory(req.body, req.user?.userId ?? null);
   sendSuccess(res, category, 201);
 };
 
@@ -75,7 +75,7 @@ export const updateCategoryHandler = async (req: Request, res: Response): Promis
     }
   }
 
-  const category = await updateCategory(categoryId, req.body);
+  const category = await updateCategory(categoryId, req.body, req.user?.userId ?? null);
   if (!category) {
     throw createHttpError(404, 'Category not found');
   }
@@ -92,7 +92,7 @@ export const deleteCategoryHandler = async (req: Request, res: Response): Promis
   }
 
   try {
-    const deleted = await deleteCategory(categoryId);
+    const deleted = await deleteCategory(categoryId, req.user?.userId ?? null);
     if (!deleted) {
       throw createHttpError(404, 'Category not found');
     }

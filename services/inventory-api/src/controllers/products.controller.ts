@@ -84,7 +84,7 @@ export const createProductHandler = async (req: Request, res: Response): Promise
   await ensureCategoryAssignable(String(req.body.category_id));
   ensureStockStatusConsistency(req.body as { status?: string; current_stock?: number }, 'create');
 
-  const product = await createProduct(req.body);
+  const product = await createProduct(req.body, req.user?.userId ?? null);
   sendSuccess(res, product, 201);
 };
 
@@ -94,7 +94,7 @@ export const updateProductHandler = async (req: Request, res: Response): Promise
   }
   ensureStockStatusConsistency(req.body as { status?: string; current_stock?: number }, 'update');
 
-  const product = await updateProduct(String(req.params.id), req.body);
+  const product = await updateProduct(String(req.params.id), req.body, req.user?.userId ?? null);
   if (!product) {
     throw createHttpError(404, 'Product not found');
   }

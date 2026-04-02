@@ -142,6 +142,7 @@ export const restockProduct = async (
     const nextStatus: RestockStatus = nextStock >= minThreshold ? 'completed' : 'pending';
     const nextQuantityNeeded = Math.max(minThreshold - nextStock, 0);
     const nextPriority = determinePriority(nextStock, minThreshold);
+    const completedAt = new Date().toISOString();
 
     await trx('products')
       .where({ id: existing.product_id })
@@ -150,13 +151,30 @@ export const restockProduct = async (
         updated_at: trx.fn.now(),
       });
 
+    if (nextStatus === 'completed') {
+      await trx('restock_queue').where({ id }).del();
+
+      return {
+        id: existing.id,
+        product_id: existing.product_id,
+        product_name: existing.product_name,
+        quantity_needed: 0,
+        priority: nextPriority,
+        status: 'completed' as const,
+        current_stock: nextStock,
+        min_stock_threshold: minThreshold,
+        created_at: existing.created_at,
+        completed_at: completedAt,
+      };
+    }
+
     await trx('restock_queue')
       .where({ id })
       .update({
-        status: nextStatus,
+        status: 'pending',
         quantity_needed: nextQuantityNeeded,
         priority: nextPriority,
-        completed_at: nextStatus === 'completed' ? trx.fn.now() : null,
+        completed_at: null,
       });
 
     const finalRow = (await trx('restock_queue as rq')

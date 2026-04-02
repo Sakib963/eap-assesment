@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { logActivity } from './activity-log.service.js';
 import { syncRestockQueueForProduct } from './stock-rules.service.js';
 
 export type ProductStatus = 'active' | 'out_of_stock' | 'inactive';
@@ -145,7 +146,7 @@ export const createProduct = async (payload: {
   current_stock: number;
   min_stock_threshold: number;
   status?: ProductStatus;
-}): Promise<ProductView> => {
+}, userId?: string | null): Promise<ProductView> => {
   const id = await db.transaction(async (trx) => {
     const isActive = payload.status !== 'inactive';
     const stock = payload.status === 'out_of_stock' ? 0 : payload.current_stock;
@@ -166,6 +167,7 @@ export const createProduct = async (payload: {
 
     await syncRestockQueueForProduct(trx, {
       id: insertedId,
+      name: payload.name,
       current_stock: stock,
       min_stock_threshold: payload.min_stock_threshold,
       is_active: isActive,
@@ -178,6 +180,14 @@ export const createProduct = async (payload: {
   if (!product) {
     throw new Error('PRODUCT_CREATE_FAILED');
   }
+
+  void logActivity({
+    user_id: userId ?? null,
+    action: `Product "${product.name}" created`,
+    entity_type: 'product',
+    entity_id: id,
+  });
+
   return product;
 };
 
@@ -191,7 +201,8 @@ export const updateProduct = async (
     current_stock?: number;
     min_stock_threshold?: number;
     status?: ProductStatus;
-  }
+  },
+  userId?: string | null
 ): Promise<ProductView | null> => {
   const updated = await db.transaction(async (trx) => {
     const existing = await trx<ProductRecord>('products').where({ id }).first();
@@ -226,11 +237,12 @@ export const updateProduct = async (
 
     const refreshed = await trx<ProductRecord>('products')
       .where({ id })
-      .first('id', 'current_stock', 'min_stock_threshold', 'is_active');
+      .first('id', 'name', 'current_stock', 'min_stock_threshold', 'is_active');
 
     if (refreshed) {
       await syncRestockQueueForProduct(trx, {
         id: refreshed.id,
+        name: refreshed.name,
         current_stock: refreshed.current_stock,
         min_stock_threshold: refreshed.min_stock_threshold,
         is_active: refreshed.is_active,
@@ -244,5 +256,21 @@ export const updateProduct = async (
     return null;
   }
 
-  return getProductById(id);
+  const product = await getProductById(id);
+  if (!product) {
+    return null;
+  }
+
+  const action = payload.status
+    ? `Product "${product.name}" status changed to ${payload.status}`
+    : `Product "${product.name}" updated`;
+
+  void logActivity({
+    user_id: userId ?? null,
+    action,
+    entity_type: 'product',
+    entity_id: id,
+  });
+
+  return product;
 };
