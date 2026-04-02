@@ -176,11 +176,8 @@
   <nz-modal
     [nzVisible]="itemModalVisible()"
     nzTitle="Add Product"
-    [nzOkDisabled]="itemForm.invalid || exceedsModalStock"
-    nzOkText="Add Item"
-    nzCancelText="Cancel"
+    [nzFooter]="itemModalFooter"
     (nzOnCancel)="closeItemModal()"
-    (nzOnOk)="addItemFromModal()"
   >
     <ng-container *nzModalContent>
       <form nz-form [nzLayout]="'vertical'" [formGroup]="itemForm" class="grid gap-3">
@@ -222,4 +219,17 @@
       </form>
     </ng-container>
   </nz-modal>
+
+  <ng-template #itemModalFooter>
+    <button nz-button nzType="default" nzSize="large" (click)="closeItemModal()">Cancel</button>
+    <button
+      nz-button
+      nzType="primary"
+      nzSize="large"
+      [disabled]="itemForm.invalid || exceedsModalStock"
+      (click)="addItemFromModal()"
+    >
+      Add Item
+    </button>
+  </ng-template>
 </section>

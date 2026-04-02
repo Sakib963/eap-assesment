@@ -73,38 +73,51 @@
 <nz-modal
   [nzVisible]="restockModalOpen()"
   nzTitle="Restock Product"
-  [nzOkText]="'Add Stock'"
-  [nzOkLoading]="submittingRestock()"
-  [nzOkDisabled]="restockQuantity() < 1"
-  (nzOnOk)="confirmRestock()"
+  [nzFooter]="restockModalFooter"
   (nzOnCancel)="closeRestockModal()"
 >
-  @if (restockingItem(); as item) {
-    <div class="grid gap-4">
-      <div class="rounded border border-[#d6e0df] bg-[#f7fbfa] p-3 text-sm">
-        <p class="m-0 text-xs font-semibold uppercase tracking-[0.06em] text-[#375f65]">Product</p>
-        <p class="m-0 mt-1 font-semibold text-[#17343a]">{{ item.product_name }}</p>
-        <div class="mt-2 flex flex-wrap gap-4 text-[#35575c]">
-          <span>Current stock: <strong class="text-[#17343a]">{{ item.current_stock }}</strong></span>
-          <span>Threshold: <strong class="text-[#17343a]">{{ item.min_stock_threshold }}</strong></span>
-          <span>Suggested qty: <strong class="text-[#17343a]">{{ item.quantity_needed }}</strong></span>
+  <ng-container *nzModalContent>
+    @if (restockingItem(); as item) {
+      <div class="grid gap-4">
+        <div class="rounded border border-[#d6e0df] bg-[#f7fbfa] p-3 text-sm">
+          <p class="m-0 text-xs font-semibold uppercase tracking-[0.06em] text-[#375f65]">Product</p>
+          <p class="m-0 mt-1 font-semibold text-[#17343a]">{{ item.product_name }}</p>
+          <div class="mt-2 flex flex-wrap gap-4 text-[#35575c]">
+            <span>Current stock: <strong class="text-[#17343a]">{{ item.current_stock }}</strong></span>
+            <span>Threshold: <strong class="text-[#17343a]">{{ item.min_stock_threshold }}</strong></span>
+            <span>Suggested qty: <strong class="text-[#17343a]">{{ item.quantity_needed }}</strong></span>
+          </div>
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium text-[#244046]">Quantity to Add</label>
+          <nz-input-number
+            class="restock-qty-input w-full"
+            [ngModel]="restockQuantity()"
+            (ngModelChange)="onRestockQuantityChange($event)"
+            [nzMin]="1"
+            [nzStep]="1"
+            nzPlaceHolder="Enter quantity"
+          ></nz-input-number>
+          <p class="mt-1 text-xs text-[#17343a]/60">
+            After adding {{ restockQuantity() }} unit(s), stock will be
+            <strong>{{ item.current_stock + restockQuantity() }}</strong>.
+          </p>
         </div>
       </div>
-      <div>
-        <label class="mb-1 block text-sm font-medium text-[#244046]">Quantity to Add</label>
-        <nz-input-number
-          class="w-full"
-          [ngModel]="restockQuantity()"
-          (ngModelChange)="onRestockQuantityChange($event)"
-          [nzMin]="1"
-          [nzStep]="1"
-          nzPlaceHolder="Enter quantity"
-        ></nz-input-number>
-        <p class="mt-1 text-xs text-[#17343a]/60">
-          After adding {{ restockQuantity() }} unit(s), stock will be
-          <strong>{{ item.current_stock + restockQuantity() }}</strong>.
-        </p>
-      </div>
-    </div>
-  }
+    }
+  </ng-container>
 </nz-modal>
+
+<ng-template #restockModalFooter>
+  <button nz-button nzType="default" nzSize="large" (click)="closeRestockModal()">Cancel</button>
+  <button
+    nz-button
+    nzType="primary"
+    nzSize="large"
+    [nzLoading]="submittingRestock()"
+    [disabled]="restockQuantity() < 1"
+    (click)="confirmRestock()"
+  >
+    Add Stock
+  </button>
+</ng-template>

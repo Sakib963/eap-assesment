@@ -37,6 +37,22 @@ export interface RestockListFilters {
   priority?: RestockPriority;
 }
 
+const determinePriority = (stock: number, threshold: number): RestockPriority => {
+  if (stock <= 0) {
+    return 'high';
+  }
+
+  if (threshold <= 0) {
+    return 'low';
+  }
+
+  if (stock <= Math.floor(threshold / 2)) {
+    return 'medium';
+  }
+
+  return 'low';
+};
+
 const mapQueueItem = (row: RestockQueueRow): RestockQueueItemView => ({
   id: row.id,
   product_id: row.product_id,
@@ -117,10 +133,15 @@ export const restockProduct = async (
         'p.min_stock_threshold'
       )
       .where('rq.id', id)
-      .andWhere('rq.status', 'pending')
       .first()) as RestockQueueRow | undefined;
 
     if (!existing) return null;
+
+    const nextStock = Number(existing.current_stock) + quantityAdded;
+    const minThreshold = Number(existing.min_stock_threshold);
+    const nextStatus: RestockStatus = nextStock >= minThreshold ? 'completed' : 'pending';
+    const nextQuantityNeeded = Math.max(minThreshold - nextStock, 0);
+    const nextPriority = determinePriority(nextStock, minThreshold);
 
     await trx('products')
       .where({ id: existing.product_id })
@@ -131,7 +152,12 @@ export const restockProduct = async (
 
     await trx('restock_queue')
       .where({ id })
-      .update({ status: 'completed', completed_at: trx.fn.now() });
+      .update({
+        status: nextStatus,
+        quantity_needed: nextQuantityNeeded,
+        priority: nextPriority,
+        completed_at: nextStatus === 'completed' ? trx.fn.now() : null,
+      });
 
     const finalRow = (await trx('restock_queue as rq')
       .join('products as p', 'p.id', 'rq.product_id')
