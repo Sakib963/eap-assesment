@@ -37,6 +37,7 @@ interface ProductFilters {
   search?: string;
   categoryId?: string;
   status?: ProductStatus;
+  excludeInactive?: boolean;
   page: number;
   pageSize: number;
 }
@@ -55,7 +56,7 @@ const mapProduct = (row: ProductRecord): ProductView => ({
 });
 
 export const listProducts = async (filters: ProductFilters): Promise<{ items: ProductView[]; total: number; page: number; pageSize: number }> => {
-  const { search = '', categoryId, status, page, pageSize } = filters;
+  const { search = '', categoryId, status, excludeInactive = false, page, pageSize } = filters;
   const offset = (page - 1) * pageSize;
 
   const baseQuery = db('products as p')
@@ -77,6 +78,9 @@ export const listProducts = async (filters: ProductFilters): Promise<{ items: Pr
       }
       if (status === 'active') {
         builder.andWhere('p.is_active', true).andWhere('p.current_stock', '>', 0);
+      }
+      if (excludeInactive) {
+        builder.andWhere('p.is_active', true);
       }
     });
 

@@ -58,7 +58,9 @@ export const listProductsHandler = async (req: Request, res: Response): Promise<
   const pageSize = Number(req.query.pageSize ?? 10);
   const search = String(req.query.search ?? '').trim();
   const categoryId = req.query.categoryId ? String(req.query.categoryId) : undefined;
-  const status = req.query.status ? String(req.query.status) : undefined;
+  const requestedStatus = req.query.status ? String(req.query.status) : undefined;
+  const isSalesman = req.user?.role === 'salesman';
+  const status = isSalesman && requestedStatus === 'inactive' ? undefined : requestedStatus;
 
   const result = await listProducts({
     page,
@@ -66,6 +68,7 @@ export const listProductsHandler = async (req: Request, res: Response): Promise<
     search,
     categoryId,
     status: status as 'active' | 'out_of_stock' | 'inactive' | undefined,
+    excludeInactive: isSalesman,
   });
 
   sendSuccess(res, result);
@@ -73,7 +76,7 @@ export const listProductsHandler = async (req: Request, res: Response): Promise<
 
 export const getProductByIdHandler = async (req: Request, res: Response): Promise<void> => {
   const product = await getProductById(String(req.params.id));
-  if (!product) {
+  if (!product || (req.user?.role === 'salesman' && product.status === 'inactive')) {
     throw createHttpError(404, 'Product not found');
   }
 

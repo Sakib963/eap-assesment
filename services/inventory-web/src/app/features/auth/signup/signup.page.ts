@@ -16,6 +16,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { BANGLADESH_MOBILE_NUMBER_VALIDATORS } from '../../../shared/validators/phone.validators';
 
 const matchPasswordValidator: ValidatorFn = (
   control: AbstractControl
@@ -57,6 +58,8 @@ export class SignupPage {
 
   protected readonly form = this.fb.nonNullable.group(
     {
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(255)]],
+      phone: ['', [...BANGLADESH_MOBILE_NUMBER_VALIDATORS]],
       email: ['', [Validators.required, Validators.email]],
       password: [
         '',
@@ -80,11 +83,16 @@ export class SignupPage {
       return;
     }
 
-    const { email, password } = this.form.getRawValue();
+    const { email, password, name, phone } = this.form.getRawValue();
 
     this.loading.set(true);
     this.authService
-      .signup({ email, password })
+      .signup({
+        email,
+        password,
+        name: name.trim(),
+        phone: phone.trim(),
+      })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => {

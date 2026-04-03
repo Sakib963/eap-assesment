@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BANGLADESH_MOBILE_NUMBER_MESSAGE, BANGLADESH_MOBILE_NUMBER_REGEX } from '../utils/phone.js';
 
 const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -37,7 +38,10 @@ export const createOrderSchema = z.object({
   query: z.object({}),
   body: z.object({
     customer_name: z.string().trim().min(2).max(120),
-    customer_phone: z.string().trim().min(7).max(30),
+    customer_phone: z
+      .string()
+      .trim()
+      .regex(BANGLADESH_MOBILE_NUMBER_REGEX, BANGLADESH_MOBILE_NUMBER_MESSAGE),
     customer_address: z.string().trim().max(255).optional().nullable(),
     delivery_instruction: z.string().trim().max(500).optional().nullable(),
     discount_amount: z.coerce.number().min(0).optional().default(0),

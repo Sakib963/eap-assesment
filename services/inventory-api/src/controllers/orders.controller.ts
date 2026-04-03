@@ -16,12 +16,14 @@ export const listOrdersHandler = async (req: Request, res: Response): Promise<vo
   const fromDate = typeof req.query.fromDate === 'string' ? req.query.fromDate : undefined;
   const toDate = typeof req.query.toDate === 'string' ? req.query.toDate : undefined;
 
-  const result = await listOrders({ page, pageSize, status, fromDate, toDate });
+  const ownerUserId = req.user?.role === 'salesman' ? req.user.userId : undefined;
+  const result = await listOrders({ page, pageSize, status, fromDate, toDate, ownerUserId });
   sendSuccess(res, result);
 };
 
 export const getOrderByIdHandler = async (req: Request, res: Response): Promise<void> => {
-  const order = await getOrderById(String(req.params.id));
+  const ownerUserId = req.user?.role === 'salesman' ? req.user.userId : undefined;
+  const order = await getOrderById(String(req.params.id), ownerUserId);
   if (!order) {
     throw createHttpError(404, 'Order not found', 'ORDER_NOT_FOUND');
   }
@@ -51,8 +53,9 @@ export const updateOrderStatusHandler = async (req: Request, res: Response): Pro
   const orderId = String(req.params.id);
   const status = String(req.body.status) as OrderStatus;
   const userId = req.user?.userId ?? null;
+  const ownerUserId = req.user?.role === 'salesman' ? req.user.userId : undefined;
 
-  const updated = await updateOrderStatus(orderId, status, userId);
+  const updated = await updateOrderStatus(orderId, status, userId, ownerUserId);
   if (!updated) {
     throw createHttpError(404, 'Order not found', 'ORDER_NOT_FOUND');
   }

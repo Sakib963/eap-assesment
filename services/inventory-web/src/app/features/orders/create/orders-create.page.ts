@@ -18,6 +18,7 @@ import type { Product } from '../../../core/models/catalog.model';
 import type { CreateOrderPayload } from '../../../core/models/orders.model';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { OrdersService } from '../../../core/services/orders.service';
+import { BANGLADESH_MOBILE_NUMBER_MESSAGE, BANGLADESH_MOBILE_NUMBER_VALIDATORS } from '../../../shared/validators/phone.validators';
 
 interface DraftOrderItem {
   product_id: string;
@@ -67,7 +68,7 @@ export class OrdersCreatePage {
 
   protected readonly orderForm = this.formBuilder.group({
     customer_name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
-    customer_phone: ['', [Validators.required, Validators.minLength(7), Validators.maxLength(30)]],
+    customer_phone: ['', [...BANGLADESH_MOBILE_NUMBER_VALIDATORS]],
     customer_address: ['', [Validators.maxLength(255)]],
     delivery_instruction: ['', [Validators.maxLength(500)]],
     discount_amount: [0, [Validators.min(0)]],
@@ -295,8 +296,7 @@ export class OrdersCreatePage {
     const control = this.orderForm.get('customer_phone');
     if (!this.shouldShowControlError('customer_phone')) return '';
     if (control?.hasError('required')) return 'Phone number is required';
-    if (control?.hasError('minlength')) return 'Phone number is too short';
-    if (control?.hasError('maxlength')) return 'Phone number is too long';
+    if (control?.hasError('pattern')) return BANGLADESH_MOBILE_NUMBER_MESSAGE;
     return '';
   }
 

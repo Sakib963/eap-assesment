@@ -21,7 +21,7 @@
         </div>
 
         <ul nz-menu nzMode="inline" nzTheme="dark" class="shell-menu">
-          @for (item of menuItems; track item.path) {
+          @for (item of menuItems(); track item.path) {
             <li
               nz-menu-item
               [routerLink]="item.path"
@@ -60,7 +60,7 @@
     </div>
 
     <ul nz-menu nzMode="inline" nzTheme="dark" class="shell-menu">
-      @for (item of menuItems; track item.path) {
+      @for (item of menuItems(); track item.path) {
         <li
           nz-menu-item
           nz-tooltip
@@ -123,6 +123,9 @@
                   </div>
                   <div class="text-[0.8rem] leading-tight text-[#4a656a]">
                     {{ user()?.email || 'anonymous' }}
+                  </div>
+                  <div class="text-[0.78rem] font-semibold uppercase tracking-[0.06em] text-[#375f65]">
+                    {{ user()?.role || 'user' }}
                   </div>
                 </div>
               </div>

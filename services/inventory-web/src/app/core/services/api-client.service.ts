@@ -31,6 +31,10 @@ export class ApiClientService {
     return this.http.put<TResponse>(`${this.apiBase}${path}`, payload);
   }
 
+  patch<TPayload, TResponse>(path: string, payload: TPayload): Observable<TResponse> {
+    return this.http.patch<TResponse>(`${this.apiBase}${path}`, payload);
+  }
+
   delete<TResponse>(path: string): Observable<TResponse> {
     return this.http.delete<TResponse>(`${this.apiBase}${path}`);
   }

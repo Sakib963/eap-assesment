@@ -3,7 +3,15 @@ import { map, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { ApiClientService } from './api-client.service';
 import type { ApiResponse } from '../models/api.model';
-import type { AuthPayload, LoginRequest, PublicUser, SignupRequest } from '../models/auth.model';
+import type {
+  AuthPayload,
+  ForgotPasswordRequestPayload,
+  ForgotPasswordResetPayload,
+  ForgotPasswordVerifyPayload,
+  LoginRequest,
+  PublicUser,
+  SignupRequest,
+} from '../models/auth.model';
 
 const AUTH_TOKEN_KEY = 'inventory_auth_token';
 const AUTH_USER_KEY = 'inventory_auth_user';
@@ -18,6 +26,8 @@ export class AuthService {
   readonly token = computed(() => this.tokenState());
   readonly user = computed(() => this.userState());
   readonly isAuthenticated = computed(() => Boolean(this.tokenState()));
+  readonly isManager = computed(() => this.userState()?.role === 'manager');
+  readonly isSalesman = computed(() => this.userState()?.role === 'salesman');
 
   hasValidSession(): boolean {
     const token = this.tokenState();
@@ -73,6 +83,54 @@ export class AuthService {
           return response.data;
         }),
         tap((data) => this.persistSession(data))
+      );
+  }
+
+  requestForgotPassword(payload: ForgotPasswordRequestPayload): Observable<{ email_exists: boolean }> {
+    return this.api
+      .post<ForgotPasswordRequestPayload, ApiResponse<{ email_exists: boolean }>>(
+        '/api/v1/auth/forgot-password/request',
+        payload
+      )
+      .pipe(
+        map((response) => {
+          if (!response.success) {
+            throw new Error(response.error.message);
+          }
+          return response.data;
+        })
+      );
+  }
+
+  verifyForgotPasswordOtp(payload: ForgotPasswordVerifyPayload): Observable<{ verified: boolean }> {
+    return this.api
+      .post<ForgotPasswordVerifyPayload, ApiResponse<{ verified: boolean }>>(
+        '/api/v1/auth/forgot-password/verify',
+        payload
+      )
+      .pipe(
+        map((response) => {
+          if (!response.success) {
+            throw new Error(response.error.message);
+          }
+          return response.data;
+        })
+      );
+  }
+
+  resetForgotPassword(payload: ForgotPasswordResetPayload): Observable<{ reset: boolean }> {
+    return this.api
+      .post<ForgotPasswordResetPayload, ApiResponse<{ reset: boolean }>>(
+        '/api/v1/auth/forgot-password/reset',
+        payload
+      )
+      .pipe(
+        map((response) => {
+          if (!response.success) {
+            throw new Error(response.error.message);
+          }
+          return response.data;
+        })
       );
   }
 

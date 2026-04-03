@@ -17,8 +17,12 @@ export interface DashboardMetrics {
   low_stock_products: LowStockProduct[];
 }
 
-export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
+export const getDashboardMetrics = async (scope?: {
+  userId?: string;
+  role?: 'manager' | 'salesman';
+}): Promise<DashboardMetrics> => {
   const today = new Date().toISOString().slice(0, 10);
+  const ownerUserId = scope?.role === 'salesman' ? scope.userId : undefined;
 
   const [
     ordersTodayResult,
@@ -28,10 +32,42 @@ export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
     lowStockCountResult,
     lowStockProducts,
   ] = await Promise.all([
-    db('orders').whereRaw('DATE(created_at) = DATE(?)', [today]).count('id as count').first(),
-    db('orders').where('status', 'pending').count('id as count').first(),
-    db('orders').whereIn('status', ['delivered', 'completed']).count('id as count').first(),
-    db('orders').whereRaw('DATE(created_at) = DATE(?)', [today]).sum('total_amount as revenue').first(),
+    db('orders')
+      .modify((builder) => {
+        if (ownerUserId) {
+          builder.where('user_id', ownerUserId);
+        }
+      })
+      .whereRaw('DATE(created_at) = DATE(?)', [today])
+      .count('id as count')
+      .first(),
+    db('orders')
+      .modify((builder) => {
+        if (ownerUserId) {
+          builder.where('user_id', ownerUserId);
+        }
+      })
+      .where('status', 'pending')
+      .count('id as count')
+      .first(),
+    db('orders')
+      .modify((builder) => {
+        if (ownerUserId) {
+          builder.where('user_id', ownerUserId);
+        }
+      })
+      .whereIn('status', ['delivered', 'completed'])
+      .count('id as count')
+      .first(),
+    db('orders')
+      .modify((builder) => {
+        if (ownerUserId) {
+          builder.where('user_id', ownerUserId);
+        }
+      })
+      .whereRaw('DATE(created_at) = DATE(?)', [today])
+      .sum('total_amount as revenue')
+      .first(),
     db('products').whereRaw('current_stock <= min_stock_threshold').count('id as count').first(),
     db('products')
       .whereRaw('current_stock <= min_stock_threshold')

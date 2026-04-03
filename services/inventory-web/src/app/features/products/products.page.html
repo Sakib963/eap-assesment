@@ -6,10 +6,12 @@
         <h1 class="my-1 text-[clamp(1.45rem,2.8vw,1.95rem)] font-extrabold text-[#17343a]">Products</h1>
         <p class="m-0 text-[0.86rem] text-[#17343a]/70">Manage SKU records, stock state, pricing, and lifecycle status.</p>
       </div>
-      <button nz-button nzType="primary" nzSize="large" (click)="openCreateDrawer()">
-        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
-        Add Product
-      </button>
+      @if (canManageProducts()) {
+        <button nz-button nzType="primary" nzSize="large" (click)="openCreateDrawer()">
+          <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+          Add Product
+        </button>
+      }
     </div>
   </nz-card>
 

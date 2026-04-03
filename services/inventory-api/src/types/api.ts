@@ -20,4 +20,8 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiError;
 export interface AuthenticatedUser {
   userId: string;
   email: string;
+  role: 'manager' | 'salesman';
+  status: 'active' | 'inactive';
+  name: string;
+  phone: string;
 }

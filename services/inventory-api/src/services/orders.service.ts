@@ -76,6 +76,7 @@ export interface OrderListFilters {
   status?: OrderStatus;
   fromDate?: string;
   toDate?: string;
+  ownerUserId?: string;
 }
 
 const ordersColumnCache = new Map<string, Promise<boolean>>();
@@ -260,6 +261,7 @@ export const listOrders = async (
   const deliveryInstructionAvailable = await hasOrdersColumn('delivery_instruction');
   const discountAmountAvailable = await hasOrdersColumn('discount_amount');
   const { page, pageSize, status, fromDate, toDate } = filters;
+  const { ownerUserId } = filters;
   const offset = (page - 1) * pageSize;
 
   const baseQuery = db('orders as o').modify((builder) => {
@@ -273,6 +275,10 @@ export const listOrders = async (
 
     if (toDate) {
       builder.whereRaw('DATE(o.created_at) <= DATE(?)', [toDate]);
+    }
+
+    if (ownerUserId) {
+      builder.where('o.user_id', ownerUserId);
     }
   });
 
@@ -323,7 +329,7 @@ export const listOrders = async (
   };
 };
 
-export const getOrderById = async (id: string): Promise<OrderView | null> => {
+export const getOrderById = async (id: string, ownerUserId?: string): Promise<OrderView | null> => {
   const customerNameAvailable = await hasOrdersColumn('customer_name');
   const customerPhoneAvailable = await hasOrdersColumn('customer_phone');
   const customerAddressAvailable = await hasOrdersColumn('customer_address');
@@ -347,6 +353,11 @@ export const getOrderById = async (id: string): Promise<OrderView | null> => {
     .count<{ items_count: string }>('oi.id as items_count')
     .groupBy('o.id')
     .where('o.id', id)
+    .modify((builder) => {
+      if (ownerUserId) {
+        builder.andWhere('o.user_id', ownerUserId);
+      }
+    })
     .first()) as (OrderRow & { items_count: string }) | undefined;
 
   if (!orderRow) {
@@ -493,13 +504,22 @@ export const createOrder = async (input: CreateOrderInput): Promise<OrderView> =
 export const updateOrderStatus = async (
   orderId: string,
   nextStatus: OrderStatus,
-  userId?: string | null
+  userId?: string | null,
+  ownerUserId?: string
 ): Promise<OrderView | null> => {
   const supportsExtendedStatuses = await supportsExtendedOrderStatus();
   const nextStatusForStorage = mapStatusForStorage(nextStatus, supportsExtendedStatuses);
 
   const updated = await db.transaction(async (trx) => {
-    const order = await trx<OrderRow>('orders').where({ id: orderId }).forUpdate().first();
+    const order = await trx<OrderRow>('orders')
+      .where({ id: orderId })
+      .modify((builder) => {
+        if (ownerUserId) {
+          builder.andWhere('user_id', ownerUserId);
+        }
+      })
+      .forUpdate()
+      .first();
     if (!order) {
       return false;
     }
@@ -566,5 +586,5 @@ export const updateOrderStatus = async (
     details: { status: nextStatus },
   });
 
-  return getOrderById(orderId);
+  return getOrderById(orderId, ownerUserId);
 };

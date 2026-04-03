@@ -38,11 +38,18 @@ export class ShellPage {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly menuItems = SHELL_NAVIGATION_ITEMS;
+  protected readonly user = this.authService.user;
+  protected readonly menuItems = computed(() => {
+    const role = this.user()?.role;
+    if (!role) {
+      return [];
+    }
+
+    return SHELL_NAVIGATION_ITEMS.filter((item) => !item.roles || item.roles.includes(role));
+  });
   protected readonly collapsed = signal(false);
   protected readonly isMobile = signal(this.detectMobileViewport());
   protected readonly mobileMenuVisible = signal(false);
-  protected readonly user = this.authService.user;
   protected readonly userDisplayName = computed(() => {
     const email = this.user()?.email?.trim();
     if (!email) {
@@ -135,7 +142,7 @@ export class ShellPage {
 
   private updateBreadcrumbs(): void {
     const cleanUrl = (this.router.url.split(/[?#]/)[0] || '/').trim();
-    const sortedItems = [...this.menuItems].sort((a, b) => b.path.length - a.path.length);
+    const sortedItems = [...this.menuItems()].sort((a, b) => b.path.length - a.path.length);
     const matched = sortedItems.find((item) => {
       if (item.path === '/') {
         return cleanUrl === '/';

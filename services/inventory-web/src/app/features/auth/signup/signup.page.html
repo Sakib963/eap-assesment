@@ -47,9 +47,27 @@
       </div>
       <h2 class="mt-1 text-4xl font-extrabold text-[#17343a]">Create Account</h2>
 
-      <form nz-form [formGroup]="form" (ngSubmit)="submit()" class="mt-4 space-y-3">
+      <form nz-form [formGroup]="form" (ngSubmit)="submit()" class="mt-4 space-y-1">
         <div>
-          <label class="mb-1 block text-[11px] font-semibold text-[#1f5c63]">Email</label>
+          <nz-form-label [nzRequired]="true" class="block text-[11px] font-semibold text-[#1f5c63]">Name</nz-form-label>
+          <nz-form-item>
+            <nz-form-control nzErrorTip="Name is required (2-255 characters)">
+              <input nz-input type="text" formControlName="name" [disabled]="loading()" placeholder="Your full name" class="!h-9 !rounded" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div>
+          <nz-form-label [nzRequired]="true" class="block text-[11px] font-semibold text-[#1f5c63]">Phone</nz-form-label>
+          <nz-form-item>
+            <nz-form-control nzErrorTip="Phone number must be 11 digits and start with 013, 014, 015, 016, 017, 018, or 019.">
+              <input nz-input type="text" formControlName="phone" [disabled]="loading()" placeholder="Phone number" class="!h-9 !rounded" />
+            </nz-form-control>
+          </nz-form-item>
+        </div>
+
+        <div>
+          <nz-form-label [nzRequired]="true" class="block text-[11px] font-semibold text-[#1f5c63]">Email</nz-form-label>
           <nz-form-item>
             <nz-form-control nzErrorTip="Please enter a valid email">
               <input nz-input type="email" formControlName="email" [disabled]="loading()" placeholder="example@mail.com" class="!h-9 !rounded" />
@@ -58,7 +76,7 @@
         </div>
 
         <div>
-          <label class="mb-1 block text-[11px] font-semibold text-[#1f5c63]">Password</label>
+          <nz-form-label [nzRequired]="true" class="block text-[11px] font-semibold text-[#1f5c63]">Password</nz-form-label>
           <nz-form-item>
             <nz-form-control nzErrorTip="Password must be 6-50 characters">
               <input nz-input type="password" formControlName="password" [disabled]="loading()" placeholder="Password" class="!h-9 !rounded" />
@@ -67,7 +85,7 @@
         </div>
 
         <div>
-          <label class="mb-1 block text-[11px] font-semibold text-[#1f5c63]">Confirm Password</label>
+          <nz-form-label [nzRequired]="true" class="block text-[11px] font-semibold text-[#1f5c63]">Confirm Password</nz-form-label>
           <nz-form-item>
             <nz-form-control [nzErrorTip]="form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched ? 'Passwords do not match' : 'Please confirm your password'">
               <input nz-input type="password" formControlName="confirmPassword" [disabled]="loading()" placeholder="Confirm password" class="!h-9 !rounded" />

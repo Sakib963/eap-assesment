@@ -20,6 +20,7 @@ import type {
   UpdateProductPayload,
 } from '../../core/models/catalog.model';
 import { CatalogService } from '../../core/services/catalog.service';
+import { AuthService } from '../../core/services/auth.service';
 import {
   SharedDataListComponent,
   SharedListConfig,
@@ -52,6 +53,7 @@ import {
 })
 export class ProductsPage {
   private readonly catalogService = inject(CatalogService);
+  private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly message = inject(NzMessageService);
 
@@ -69,6 +71,7 @@ export class ProductsPage {
   protected readonly isMobileViewport = signal(this.detectMobileViewport());
 
   protected readonly isEditing = computed(() => Boolean(this.editingProductId()));
+  protected readonly canManageProducts = computed(() => this.authService.user()?.role === 'manager');
   protected readonly drawerWidth = computed(() => (this.isMobileViewport() ? '100vw' : 560));
 
   protected readonly filterForm = this.formBuilder.group({
@@ -188,13 +191,16 @@ export class ProductsPage {
         label: 'Edit',
         icon: 'edit',
         type: 'default',
+        visible: () => this.canManageProducts(),
         onClick: (product) => this.openEditDrawer(product),
       },
     ],
   };
 
   constructor() {
-    this.loadCategories();
+    if (this.canManageProducts()) {
+      this.loadCategories();
+    }
     this.loadProducts();
   }
 
@@ -231,6 +237,10 @@ export class ProductsPage {
   }
 
   protected loadCategories(): void {
+    if (!this.canManageProducts()) {
+      return;
+    }
+
     this.loadingCategories.set(true);
 
     this.catalogService
@@ -267,6 +277,8 @@ export class ProductsPage {
   }
 
   protected openCreateDrawer(): void {
+    if (!this.canManageProducts()) return;
+
     this.editingProductId.set(null);
     this.productForm.reset({
       name: '',
@@ -281,6 +293,8 @@ export class ProductsPage {
   }
 
   protected openEditDrawer(product: Product): void {
+    if (!this.canManageProducts()) return;
+
     this.editingProductId.set(product.id);
     this.productForm.setValue({
       name: product.name,

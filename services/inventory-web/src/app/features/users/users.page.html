@@ -1,0 +1,106 @@
+<section class="grid gap-5 lg:gap-6">
+  <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(165deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex flex-col gap-2">
+        <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Access Management</p>
+        <h1 class="my-1 text-[clamp(1.45rem,2.8vw,1.95rem)] font-extrabold text-[#17343a]">Users</h1>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">Create and manage manager/salesman accounts.</p>
+      </div>
+      <button nz-button nzType="primary" nzSize="large" (click)="openCreateDrawer()">
+        <nz-icon nzType="plus" nzTheme="outline"></nz-icon>
+        Add User
+      </button>
+    </div>
+  </nz-card>
+
+  <app-shared-filter-panel
+    title="User Filters"
+    [form]="filterForm"
+    [fields]="filterFields"
+    [searchDebounceMs]="300"
+    (filtersChange)="onFiltersChange()"
+  ></app-shared-filter-panel>
+
+  <app-shared-data-list
+    [config]="userListConfig"
+    [items]="users()"
+    [loading]="loading()"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [total]="totalUsers()"
+    (pageChange)="onPageChange($event)"
+  ></app-shared-data-list>
+
+  <nz-drawer
+    [nzVisible]="drawerVisible()"
+    [nzTitle]="isEditing() ? 'Edit User' : 'Create User'"
+    [nzWidth]="520"
+    [nzClosable]="true"
+    [nzMaskClosable]="!saving()"
+    [nzFooter]="drawerFooter"
+    (nzOnClose)="closeDrawer()"
+  >
+    <ng-container *nzDrawerContent>
+      <form nz-form [nzLayout]="'vertical'" [formGroup]="userForm" class="users-form-grid">
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Email</nz-form-label>
+          <nz-form-control nzErrorTip="Valid email is required">
+            <input nz-input formControlName="email" placeholder="user@example.com" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Name</nz-form-label>
+          <nz-form-control nzErrorTip="Name is required (2-255 characters)">
+            <input nz-input formControlName="name" placeholder="Full name" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Phone</nz-form-label>
+          <nz-form-control nzErrorTip="Phone number must be 11 digits and start with 013, 014, 015, 016, 017, 018, or 019.">
+            <input nz-input formControlName="phone" placeholder="Phone" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Role</nz-form-label>
+          <nz-form-control nzErrorTip="Role is required">
+            <nz-select formControlName="role" nzPlaceHolder="Select role">
+              <nz-option nzValue="manager" nzLabel="Manager"></nz-option>
+              <nz-option nzValue="salesman" nzLabel="Salesman"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzRequired]="true">Status</nz-form-label>
+          <nz-form-control nzErrorTip="Status is required">
+            <nz-select formControlName="status" nzPlaceHolder="Select status">
+              <nz-option nzValue="active" nzLabel="Active"></nz-option>
+              <nz-option nzValue="inactive" nzLabel="Inactive"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        @if (!isEditing()) {
+          <nz-form-item>
+            <nz-form-label [nzRequired]="true">Password</nz-form-label>
+            <nz-form-control nzErrorTip="Minimum 6 characters">
+              <input nz-input type="password" formControlName="password" placeholder="Temporary password" />
+            </nz-form-control>
+          </nz-form-item>
+        }
+      </form>
+    </ng-container>
+  </nz-drawer>
+
+  <ng-template #drawerFooter>
+    <div class="flex justify-end gap-2">
+      <button nz-button nzType="default" [disabled]="saving()" (click)="closeDrawer()">Cancel</button>
+      <button nz-button nzType="primary" [nzLoading]="saving()" (click)="submitUser()">
+        {{ isEditing() ? 'Update' : 'Create' }}
+      </button>
+    </div>
+  </ng-template>
+</section>

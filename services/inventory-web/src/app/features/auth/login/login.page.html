@@ -64,6 +64,9 @@
                 <input nz-input type="password" formControlName="password" [disabled]="loading()" placeholder="Password" class="!h-9 !rounded" />
               </nz-form-control>
             </nz-form-item>
+            <div class="-mt-1 text-right text-[11px]">
+              <a routerLink="/auth/forgot-password" class="font-semibold text-[#1f5c63] hover:text-[#17343a]">Forgot password?</a>
+            </div>
           </div>
 
           <button nz-button nzType="primary" [nzLoading]="loading()" [disabled]="loading()" type="submit" class="!h-9 !w-full !rounded !bg-[#1f5c63] hover:!bg-[#17343a] !font-semibold">

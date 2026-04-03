@@ -4,7 +4,10 @@
       <div>
         <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Live Operations Snapshot</p>
         <h1 class="my-2 text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold leading-[1.1] text-[#17343a]">{{ title() }}</h1>
-        <p class="m-0 text-[0.86rem] text-[#17343a]/70">Signed in as {{ currentUserEmail() }}</p>
+        <p class="m-0 text-[0.86rem] text-[#17343a]/70">
+          Signed in as {{ currentUserEmail() }}
+          <nz-tag nzColor="blue" class="ml-2">{{ currentUserRole() }}</nz-tag>
+        </p>
       </div>
     </div>
   </nz-card>

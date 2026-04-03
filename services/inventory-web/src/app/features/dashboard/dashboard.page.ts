@@ -29,6 +29,12 @@ export class DashboardPage implements OnInit {
     return this.authService.user()?.email ?? 'Anonymous';
   });
 
+  protected readonly currentUserRole = computed(() => {
+    const role = this.authService.user()?.role;
+    if (!role) return 'Unknown';
+    return role === 'manager' ? 'Manager' : 'Salesman';
+  });
+
   protected readonly stats = computed(() => {
     const m = this.metrics();
     if (!m) return [];

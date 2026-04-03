@@ -8,6 +8,7 @@ import restockRouter from './restock.routes.js';
 import { systemRouter } from './system.routes.js';
 import dashboardRouter from './dashboard.routes.js';
 import activityLogRouter from './activity-log.routes.js';
+import usersRouter from './users.routes.js';
 
 export const apiRouter = Router();
 export const v1Router = Router();
@@ -20,6 +21,7 @@ v1Router.use('/orders', ordersRouter);
 v1Router.use('/restock', restockRouter);
 v1Router.use('/dashboard', dashboardRouter);
 v1Router.use('/activity-logs', activityLogRouter);
+v1Router.use('/users', usersRouter);
 
 apiRouter.use(healthRouter);
 apiRouter.use('/v1', v1Router);

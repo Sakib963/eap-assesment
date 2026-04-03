@@ -6,7 +6,7 @@ import {
   updateProductHandler,
 } from '../controllers/products.controller.js';
 import { asyncHandler } from '../middleware/async-handler.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireRoles } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import {
   createProductSchema,
@@ -21,7 +21,7 @@ productsRouter.use(requireAuth);
 
 productsRouter.get('/', validate(listProductsSchema), asyncHandler(listProductsHandler));
 productsRouter.get('/:id', validate(getProductByIdSchema), asyncHandler(getProductByIdHandler));
-productsRouter.post('/', validate(createProductSchema), asyncHandler(createProductHandler));
-productsRouter.put('/:id', validate(updateProductSchema), asyncHandler(updateProductHandler));
+productsRouter.post('/', requireRoles(['manager']), validate(createProductSchema), asyncHandler(createProductHandler));
+productsRouter.put('/:id', requireRoles(['manager']), validate(updateProductSchema), asyncHandler(updateProductHandler));
 
 export default productsRouter;
