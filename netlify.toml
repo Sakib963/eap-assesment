@@ -1,6 +1,6 @@
 [build]
-  command = "cd services/inventory-web && npm run build"
-  publish = "services/inventory-web/dist"
+  command = "npm run build"
+  publish = "dist/frontend"
   base = "services/inventory-web"
 
 [dev]
@@ -8,16 +8,8 @@
   port = 4200
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/*"
+  to = "/index.html"
   status = 200
 
-# Environment variables (set in Netlify UI, not here for security)
-[context.production.environment]
-  API_BASE_URL = "https://inventory-api.vercel.app"
-
-[context.deploy-preview.environment]
-  API_BASE_URL = "http://localhost:3000"
-
-[context.branch-deploy.environment]
-  API_BASE_URL = "http://localhost:3000"
+# Environment variables should be configured in Netlify UI.

@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "cd services/inventory-api && npm run build",
-  "startCommand": "node services/inventory-api/dist/server.js",
+  "buildCommand": "npm run build --prefix services/inventory-api",
+  "startCommand": "node services/inventory-api/dist/services/inventory-api/src/server.js",
   "env": {
     "NODE_ENV": "production",
     "PORT": "3000"
@@ -9,11 +9,11 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "services/inventory-api/dist/server.js"
+      "dest": "services/inventory-api/dist/services/inventory-api/src/server.js"
     }
   ],
   "functions": {
-    "services/inventory-api/dist/server.js": {
+    "services/inventory-api/dist/services/inventory-api/src/server.js": {
       "maxDuration": 30
     }
   }

@@ -57,7 +57,8 @@ A comprehensive full-stack web application for managing products, inventories, c
 - Comprehensive action tracking (order changes, stock updates, product creation)
 - User attribution for all changes
 - Async logging with fire-and-forget pattern (non-blocking)
-- Latest 10 entries displayed on demand
+- Paginated timeline with default latest 10 entries
+- Date-range filtering for historical activity review
 
 ### 6. **Dashboard & Analytics**
 - Real-time KPI summary: Orders Today, Pending Orders, Completed Orders, Low Stock Count, Revenue
@@ -129,7 +130,7 @@ A comprehensive full-stack web application for managing products, inventories, c
 │  │  ├── /api/v1/products/* (CRUD + List with Filters)       │  │
 │  │  ├── /api/v1/orders/* (Create, List, Update Status)      │  │
 │  │  ├── /api/v1/restock/* (List, Restock, Mark Complete)    │  │
-│  │  ├── /api/v1/activity/* (Audit Trail)                    │  │
+│  │  ├── /api/v1/activity-logs/* (Audit Trail)               │  │
 │  │  ├── /api/v1/users/* (RBAC Management)                   │  │
 │  │  ├── /api/v1/dashboard/* (KPI Metrics)                   │  │
 │  │  └── Health checks, error handling, async handlers       │  │
@@ -241,6 +242,7 @@ npm start
 cd services/inventory-web
 npm run build
 # Build output: dist/frontend/
+```
 
 ## 🧱 Migrations & Seeds
 
@@ -402,14 +404,14 @@ POST /api/v1/restock/:id/restock
   Returns: { item }
   Side Effect: Auto-marks complete if threshold reached
 
-PUT /api/v1/restock/:id/mark-complete
+PUT /api/v1/restock/:id/complete
   Returns: { item }
 ```
 
 ### **Activity Log**
 ```
-GET /api/v1/activity?limit=10
-  Returns: { items: ActivityLogEntry[] }
+GET /api/v1/activity-logs?page=1&pageSize=10&fromDate=&toDate=
+  Returns: { items: ActivityLogEntry[], total, page, pageSize }
 ```
 
 ---
@@ -667,8 +669,3 @@ For issues or questions:
 3. Ensure PostgreSQL is running and accessible
 4. Check API health: `GET /api/v1/health`
 
----
-
-**Last Updated**: April 2026  
-**License**: Proprietary  
-**Author**: EAP Assessment Team
