@@ -9,8 +9,25 @@ import { apiRouter } from './routes/index.js';
 
 export const app = express();
 
+const allowedOrigins = env.corsOrigin
+	.split(',')
+	.map((origin) => origin.trim().replace(/\/+$/, ''))
+	.filter(Boolean);
+
 app.use(helmet());
-app.use(cors({ origin: env.corsOrigin }));
+app.use(
+	cors({
+		origin: (origin, callback) => {
+			if (!origin) {
+				callback(null, true);
+				return;
+			}
+
+			const normalizedOrigin = origin.replace(/\/+$/, '');
+			callback(null, allowedOrigins.includes(normalizedOrigin));
+		},
+	})
+);
 app.use(express.json());
 app.use(requestContext);
 app.use(morgan('dev'));
