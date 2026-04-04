@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -74,7 +75,7 @@ export class ForgotPasswordPage {
           this.step.set(2);
           this.message.success('Email found. Use OTP 1234 to continue.');
         },
-        error: (error: Error) => this.message.error(error.message || 'Unable to verify email'),
+        error: (error: unknown) => this.message.error(this.resolveEmailErrorMessage(error)),
       });
   }
 
@@ -95,7 +96,7 @@ export class ForgotPasswordPage {
           this.step.set(3);
           this.message.success('OTP verified. Set your new password.');
         },
-        error: (error: Error) => this.message.error(error.message || 'OTP verification failed'),
+        error: (error: unknown) => this.message.error(this.resolveOtpErrorMessage(error)),
       });
   }
 
@@ -118,7 +119,72 @@ export class ForgotPasswordPage {
           this.message.success('Password updated successfully. Please login.');
           void this.router.navigateByUrl('/auth/login');
         },
-        error: (error: Error) => this.message.error(error.message || 'Password reset failed'),
+        error: (error: unknown) => this.message.error(this.resolveResetErrorMessage(error)),
       });
+  }
+
+  private resolveEmailErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'Unable to verify email. Please try again.';
+    }
+
+    if (error.status === 0) {
+      return 'Cannot reach API server. Please check your backend connection.';
+    }
+
+    const apiMessage =
+      typeof error.error?.error?.message === 'string' ? error.error.error.message : null;
+
+    if (error.status === 404) {
+      return 'Email does not exist. Please check and try again.';
+    }
+
+    return apiMessage ?? 'Unable to verify email. Please try again.';
+  }
+
+  private resolveOtpErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'Unable to verify OTP. Please try again.';
+    }
+
+    if (error.status === 0) {
+      return 'Cannot reach API server. Please check your backend connection.';
+    }
+
+    const apiMessage =
+      typeof error.error?.error?.message === 'string' ? error.error.error.message : null;
+
+    if (error.status === 400) {
+      return apiMessage ?? 'Invalid OTP or OTP has expired.';
+    }
+
+    if (error.status === 429) {
+      return 'Too many invalid OTP attempts. Please request a new one.';
+    }
+
+    return apiMessage ?? 'Unable to verify OTP. Please try again.';
+  }
+
+  private resolveResetErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return 'Unable to reset password. Please try again.';
+    }
+
+    if (error.status === 0) {
+      return 'Cannot reach API server. Please check your backend connection.';
+    }
+
+    const apiMessage =
+      typeof error.error?.error?.message === 'string' ? error.error.error.message : null;
+
+    if (error.status === 400) {
+      return apiMessage ?? 'Invalid OTP or password format.';
+    }
+
+    if (error.status === 404) {
+      return 'Password reset request not found. Please start over.';
+    }
+
+    return apiMessage ?? 'Password reset failed. Please try again.';
   }
 }

@@ -1,53 +1,102 @@
-<section class="grid gap-5">
+<section class="grid gap-6">
   <nz-card class="rounded-sm border border-[#d6e0df] bg-[linear-gradient(160deg,#f7fbfa,#ebf2f2)]" [nzBordered]="false">
     <div class="flex flex-wrap items-start justify-between gap-4">
       <div>
         <p class="m-0 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-[#375f65]">Live Operations Snapshot</p>
         <h1 class="my-2 text-[clamp(1.5rem,3vw,2.1rem)] font-extrabold leading-[1.1] text-[#17343a]">{{ title() }}</h1>
         <p class="m-0 text-[0.86rem] text-[#17343a]/70">
-          Signed in as {{ currentUserEmail() }}
+          Signed in as <strong>{{ currentUserEmail() }}</strong>
           <nz-tag nzColor="blue" class="ml-2">{{ currentUserRole() }}</nz-tag>
         </p>
+        <p class="m-0 mt-2 text-[0.85rem] text-[#2f565c]">{{ roleHeadline() }}</p>
       </div>
     </div>
   </nz-card>
 
   @if (loading()) {
     <nz-card>
-      <div class="flex justify-center py-8">
+      <div class="flex justify-center py-16">
         <nz-spin nzSize="large"></nz-spin>
       </div>
     </nz-card>
   } @else {
-    <nz-row [nzGutter]="[14, 14]">
+    <!-- KPI Stats Row -->
+    <nz-row [nzGutter]="[16, 16]">
       @for (metric of stats(); track metric.label) {
-        <nz-col [nzXs]="24" [nzMd]="12" [nzXl]="6">
-          <nz-card class="rounded-sm">
-            <nz-statistic [nzTitle]="metric.label" [nzValue]="metric.value" [nzPrefix]="metric.suffix"></nz-statistic>
+        <nz-col [nzXs]="24" [nzSm]="12" [nzXl]="8" [nzXXl]="4">
+          <nz-card class="rounded-sm shadow-sm hover:shadow-md transition-shadow h-full">
+            <nz-statistic 
+              [nzTitle]="metric.label" 
+              [nzValue]="metric.value" 
+              [nzPrefix]="metric.suffix"
+              [nzValueStyle]="{ 'font-size': '2rem', 'color': '#17343a' }">
+            </nz-statistic>
           </nz-card>
         </nz-col>
       }
     </nz-row>
 
-    <nz-row [nzGutter]="[14, 14]">
-      <nz-col [nzXs]="24" [nzXl]="14">
+    <nz-row [nzGutter]="[16, 16]">
+      <nz-col [nzXs]="24" [nzXl]="16">
+        <nz-card nzTitle="Operational Insights">
+          <div class="insights-grid">
+            @for (insight of insights(); track insight.title) {
+              <div class="insight-item" [attr.data-tone]="insight.tone">
+                <p class="insight-title">{{ insight.title }}</p>
+                <p class="insight-value">{{ insight.value }}</p>
+                <p class="insight-helper">{{ insight.helper }}</p>
+              </div>
+            }
+          </div>
+        </nz-card>
+      </nz-col>
+
+      <nz-col [nzXs]="24" [nzXl]="8">
+        <nz-card nzTitle="Recommended Actions">
+          <ul class="action-list">
+            @for (item of actionItems(); track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </nz-card>
+      </nz-col>
+    </nz-row>
+
+    <!-- Charts & Tables Row -->
+    <nz-row [nzGutter]="[16, 16]">
+      <!-- Left: Analytics Chart (60%) -->
+      <nz-col [nzXs]="24" [nzLg]="15" [nzXl]="14">
+        <nz-card nzTitle="Daily Analytics Chart">
+          <div class="bg-[#fafafa] rounded p-4">
+            <canvas #revenueChart></canvas>
+          </div>
+        </nz-card>
+      </nz-col>
+
+      <!-- Right: Low Stock Alerts (40%) -->
+      <nz-col [nzXs]="24" [nzLg]="9" [nzXl]="10">
         <nz-card nzTitle="Low Stock — Priority Attention">
           @if (attentionItems().length === 0) {
-            <p class="m-0 text-[#17343a]/60">All products are adequately stocked.</p>
+            <p class="m-0 text-[#17343a]/60 text-center py-8">✓ All products are adequately stocked</p>
           } @else {
-            <nz-table [nzData]="attentionItems()" [nzFrontPagination]="false" nzSize="middle">
+            <nz-table 
+              [nzData]="attentionItems()" 
+              [nzFrontPagination]="false" 
+              nzSize="small"
+              [nzPageSize]="10"
+              [nzShowPagination]="attentionItems().length > 10">
               <thead>
                 <tr>
                   <th>Item</th>
-                  <th>Note</th>
+                  <th>Stock Status</th>
                   <th>Priority</th>
                 </tr>
               </thead>
               <tbody>
                 @for (row of attentionItems(); track row.item) {
                   <tr>
-                    <td>{{ row.item }}</td>
-                    <td>{{ row.note }}</td>
+                    <td class="font-medium text-[#17343a]">{{ row.item }}</td>
+                    <td class="text-[0.85rem] text-[#666]">{{ row.note }}</td>
                     <td>
                       @if (row.priority === 'high') {
                         <nz-tag nzColor="red">High</nz-tag>
@@ -61,9 +110,6 @@
             </nz-table>
           }
         </nz-card>
-      </nz-col>
-
-      <nz-col [nzXs]="24" [nzXl]="10">
       </nz-col>
     </nz-row>
   }

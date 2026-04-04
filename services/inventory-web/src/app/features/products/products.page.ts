@@ -198,9 +198,7 @@ export class ProductsPage {
   };
 
   constructor() {
-    if (this.canManageProducts()) {
-      this.loadCategories();
-    }
+    this.loadCategories();
     this.loadProducts();
   }
 
@@ -237,10 +235,6 @@ export class ProductsPage {
   }
 
   protected loadCategories(): void {
-    if (!this.canManageProducts()) {
-      return;
-    }
-
     this.loadingCategories.set(true);
 
     this.catalogService

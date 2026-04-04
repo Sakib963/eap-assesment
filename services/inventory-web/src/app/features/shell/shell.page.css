@@ -133,7 +133,8 @@
 
 .content-scroll {
   height: calc(100vh - 74px);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px;
 }
 

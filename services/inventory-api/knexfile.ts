@@ -19,11 +19,11 @@ const config: Record<string, Knex.Config> = {
     },
     migrations: {
       tableName: 'knex_migrations',
-      directory: './dist/database/migrations',
+      directory: './dist/services/inventory-api/src/database/migrations',
       extension: 'js',
     },
     seeds: {
-      directory: './dist/database/seeds',
+      directory: './dist/services/inventory-api/src/database/seeds',
       extension: 'js',
     },
   },

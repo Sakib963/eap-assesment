@@ -18,9 +18,12 @@ import {
 const categoriesRouter = Router();
 
 categoriesRouter.use(requireAuth);
-categoriesRouter.use(requireRoles(['manager']));
 
+// GET is accessible to all authenticated users (manager and salesman)
 categoriesRouter.get('/', validate(listCategoriesSchema), asyncHandler(listCategoriesHandler));
+
+// POST/PUT/DELETE require manager role
+categoriesRouter.use(requireRoles(['manager']));
 categoriesRouter.post('/', validate(createCategorySchema), asyncHandler(createCategoryHandler));
 categoriesRouter.put('/:id', validate(updateCategorySchema), asyncHandler(updateCategoryHandler));
 categoriesRouter.delete('/:id', validate(deleteCategorySchema), asyncHandler(deleteCategoryHandler));
