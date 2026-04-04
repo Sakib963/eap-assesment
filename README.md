@@ -1,5 +1,7 @@
 # Smart Inventory & Order Management System
 
+**LIVE WEB APP: https://eap-assesment.netlify.app/**
+
 A comprehensive full-stack web application for managing products, inventories, customer orders, and intelligent restock workflows with real-time status tracking and conflict prevention.
 
 **Status**: Production Ready | **Version**: 1.1.0

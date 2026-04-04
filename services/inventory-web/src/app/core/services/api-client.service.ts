@@ -9,34 +9,39 @@ type QueryParams = object;
 @Injectable({ providedIn: 'root' })
 export class ApiClientService {
   private readonly http = inject(HttpClient);
-  private readonly apiBase = environment.apiBaseUrl;
+  private readonly apiBase = environment.apiBaseUrl.replace(/\/+$/, '');
+
+  private buildUrl(path: string): string {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${this.apiBase}${normalizedPath}`;
+  }
 
   get<T>(path: string, queryParams?: QueryParams): Observable<T> {
-    return this.http.get<T>(`${this.apiBase}${path}`, {
+    return this.http.get<T>(this.buildUrl(path), {
       params: this.buildHttpParams(queryParams),
     });
   }
 
   getWrapped<T>(path: string, queryParams?: QueryParams): Observable<ApiResponse<T>> {
-    return this.http.get<ApiResponse<T>>(`${this.apiBase}${path}`, {
+    return this.http.get<ApiResponse<T>>(this.buildUrl(path), {
       params: this.buildHttpParams(queryParams),
     });
   }
 
   post<TPayload, TResponse>(path: string, payload: TPayload): Observable<TResponse> {
-    return this.http.post<TResponse>(`${this.apiBase}${path}`, payload);
+    return this.http.post<TResponse>(this.buildUrl(path), payload);
   }
 
   put<TPayload, TResponse>(path: string, payload: TPayload): Observable<TResponse> {
-    return this.http.put<TResponse>(`${this.apiBase}${path}`, payload);
+    return this.http.put<TResponse>(this.buildUrl(path), payload);
   }
 
   patch<TPayload, TResponse>(path: string, payload: TPayload): Observable<TResponse> {
-    return this.http.patch<TResponse>(`${this.apiBase}${path}`, payload);
+    return this.http.patch<TResponse>(this.buildUrl(path), payload);
   }
 
   delete<TResponse>(path: string): Observable<TResponse> {
-    return this.http.delete<TResponse>(`${this.apiBase}${path}`);
+    return this.http.delete<TResponse>(this.buildUrl(path));
   }
 
   private buildHttpParams(queryParams?: QueryParams): HttpParams | undefined {
