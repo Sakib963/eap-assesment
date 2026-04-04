@@ -23,8 +23,8 @@ const config: Record<string, Knex.Config> = {
       extension: 'js',
     },
     seeds: {
-      directory: './dist/services/inventory-api/src/database/seeds',
-      extension: 'js',
+      directory: './src/database/seeds',
+      extension: 'ts',
     },
   },
 };

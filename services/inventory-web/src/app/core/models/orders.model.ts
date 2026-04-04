@@ -102,3 +102,10 @@ export interface ActivityLogEntry {
   details: Record<string, unknown> | null;
   created_at: string;
 }
+
+export interface ActivityLogListParams {
+  page?: number;
+  pageSize?: number;
+  fromDate?: string;
+  toDate?: string;
+}

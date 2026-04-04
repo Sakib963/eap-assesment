@@ -5,6 +5,14 @@
     <p class="m-0 text-[0.86rem] text-[#17343a]/70">Recent operational actions captured for visibility and troubleshooting.</p>
   </nz-card>
 
+  <app-shared-filter-panel
+    title="Activity Filters"
+    [form]="filterForm"
+    [fields]="filterFields"
+    [searchDebounceMs]="300"
+    (filtersChange)="onFiltersChange()"
+  ></app-shared-filter-panel>
+
   <nz-card nzTitle="Recent Activity">
     @if (loading()) {
       <div class="flex justify-center py-8">
@@ -16,11 +24,24 @@
       <nz-timeline>
         @for (entry of activities(); track entry.id) {
           <nz-timeline-item>
-            <span class="mr-2 text-[0.8rem] text-[#17343a]/50">{{ formatTime(entry.created_at) }}</span>
+            <span class="mr-2 text-[0.8rem] text-[#17343a]/50">{{ formatDateTime(entry.created_at) }}</span>
             <span class="font-semibold text-[#1d3d42]">{{ entry.action }}</span>
           </nz-timeline-item>
         }
       </nz-timeline>
+
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#d6e0df] pt-4">
+        <p class="m-0 text-[0.82rem] text-[#17343a]/65">Showing {{ activities().length }} of {{ total() }} activities</p>
+        <nz-pagination
+          [nzPageIndex]="page()"
+          [nzPageSize]="pageSize()"
+          [nzTotal]="total()"
+          [nzShowSizeChanger]="true"
+          [nzPageSizeOptions]="[10, 25, 50, 100]"
+          (nzPageIndexChange)="onPageIndexChange($event)"
+          (nzPageSizeChange)="onPageSizeChange($event)"
+        ></nz-pagination>
+      </div>
     }
   </nz-card>
 </section>

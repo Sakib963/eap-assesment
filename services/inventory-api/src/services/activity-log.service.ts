@@ -29,6 +29,13 @@ export interface LogActivityInput {
   details?: Record<string, unknown> | null;
 }
 
+export interface ListActivityLogsOptions {
+  page?: number;
+  pageSize?: number;
+  fromDate?: string;
+  toDate?: string;
+}
+
 export const logActivity = async (entry: LogActivityInput): Promise<void> => {
   try {
     await db('activity_logs').insert({
@@ -43,11 +50,35 @@ export const logActivity = async (entry: LogActivityInput): Promise<void> => {
   }
 };
 
-export const listActivityLogs = async (limit = 10): Promise<ActivityLogEntry[]> => {
-  const rows = (await db('activity_logs as al')
-    .leftJoin('users as u', 'u.id', 'al.user_id')
-    .orderBy('created_at', 'desc')
-    .limit(limit)
+export const listActivityLogs = async ({
+  page = 1,
+  pageSize = 10,
+  fromDate,
+  toDate,
+}: ListActivityLogsOptions = {}): Promise<{ items: ActivityLogEntry[]; total: number; page: number; pageSize: number }> => {
+  const baseQuery = db('activity_logs as al')
+    .leftJoin('users as u', 'u.id', 'al.user_id');
+
+  if (fromDate) {
+    baseQuery.where('al.created_at', '>=', fromDate);
+  }
+
+  if (toDate) {
+    baseQuery.where('al.created_at', '<', db.raw("(?::date + interval '1 day')", [toDate]));
+  }
+
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.floor(pageSize) : 10;
+  const offset = (safePage - 1) * safePageSize;
+
+  const totalResult = await baseQuery.clone().count<{ count: string }[]>({ count: 'al.id' }).first();
+  const total = Number(totalResult?.count ?? 0);
+
+  const rows = (await baseQuery
+    .clone()
+    .orderBy('al.created_at', 'desc')
+    .limit(safePageSize)
+    .offset(offset)
     .select(
       'al.id',
       'al.user_id',
@@ -59,7 +90,7 @@ export const listActivityLogs = async (limit = 10): Promise<ActivityLogEntry[]> 
       'u.email as user_email'
     )) as ActivityLogRow[];
 
-  return rows.map((row) => ({
+  const items = rows.map((row) => ({
     id: String(row.id),
     user_id: row.user_id ? String(row.user_id) : null,
     action: row.action.includes(' by ')
@@ -70,4 +101,11 @@ export const listActivityLogs = async (limit = 10): Promise<ActivityLogEntry[]> 
     details: row.details ?? null,
     created_at: String(row.created_at),
   }));
+
+  return {
+    items,
+    total,
+    page: safePage,
+    pageSize: safePageSize,
+  };
 };

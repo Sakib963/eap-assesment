@@ -99,6 +99,7 @@ export class UsersPage {
   protected readonly userListConfig: SharedListConfig<UserRecord> = {
     title: 'User List',
     defaultView: 'table',
+    cardGridClass: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
     serialColumnWidth: '8%',
     actionsColumnWidth: '15%',
     emptyText: 'No users found.',

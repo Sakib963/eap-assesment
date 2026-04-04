@@ -4,9 +4,9 @@
 
 ## Overview
 
-PostgreSQL 16+ database with 7 core tables, connection pooling, and production-ready indexes.
+PostgreSQL 16+ database with eight core tables, Knex migrations, and a structured seed pipeline. The current schema is designed around inventory operations, order fulfillment, restock tracking, audit logging, and forgot-password recovery.
 
-## Tables
+## Schema at a Glance
 
 ### 1. `users`
 Authentication and user management.
@@ -15,33 +15,39 @@ Authentication and user management.
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
 | `email` | VARCHAR(255) | NOT NULL, UNIQUE | Login credential |
-| `password_hash` | VARCHAR(255) | NOT NULL | Bcrypt hashed (10+ rounds) |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Record creation time |
-| `updated_at` | TIMESTAMP | DEFAULT NOW() | Last update time |
+| `password_hash` | VARCHAR(255) | NOT NULL | Bcrypt hash |
+| `name` | VARCHAR(255) | NOT NULL | Display name |
+| `phone` | VARCHAR(30) | NOT NULL | Contact number |
+| `role` | VARCHAR(30) | NOT NULL, DEFAULT 'salesman' | `manager` or `salesman` |
+| `status` | VARCHAR(30) | NOT NULL, DEFAULT 'active' | Active/inactive account state |
+| `created_by` | VARCHAR(255) | NOT NULL, DEFAULT 'system' | Audit metadata |
+| `updated_by` | VARCHAR(255) | NOT NULL, DEFAULT 'system' | Audit metadata |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Record creation time |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last update time |
 
-**Indexes**: email, created_at
+**Indexes**: `email`, `role`, `status`
 
 **Relations**:
-- Has many: orders, activity_logs
+- Has many: `orders`, `activity_logs`, `password_reset_requests`
 
 ---
 
 ### 2. `categories`
-Product grouping / organization.
+Product grouping and filtering.
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| `name` | VARCHAR(100) | NOT NULL, UNIQUE | Category name (e.g., "Electronics") |
+| `name` | VARCHAR(100) | NOT NULL, UNIQUE | Category name |
 | `description` | TEXT | NULLABLE | Extended description |
-| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Active/inactive category status |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Record creation time |
-| `updated_at` | TIMESTAMP | DEFAULT NOW() | Last update time |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Active/inactive category state |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Record creation time |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last update time |
 
-**Indexes**: name, is_active, created_at
+**Indexes**: `name`, `is_active`
 
 **Relations**:
-- Has many: products
+- Has many: `products`
 
 ---
 
@@ -51,63 +57,78 @@ Inventory items with stock tracking.
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| `category_id` | UUID | NOT NULL, FK(categories) | Parent category |
-| `name` | VARCHAR(100) | NOT NULL | Product name |
+| `category_id` | UUID | NOT NULL, FK(`categories.id`) RESTRICT | Parent category |
+| `name` | VARCHAR(150) | NOT NULL | Product name |
 | `description` | TEXT | NULLABLE | Product details |
-| `price` | DECIMAL(10,2) | NOT NULL | Unit price in currency |
+| `price` | DECIMAL(12,2) | NOT NULL, DEFAULT 0 | Unit price |
 | `current_stock` | INTEGER | NOT NULL, DEFAULT 0 | Available quantity |
-| `min_stock_threshold` | INTEGER | NOT NULL, DEFAULT 10 | Restock trigger |
-| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Active/inactive flag |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Record creation time |
-| `updated_at` | TIMESTAMP | DEFAULT NOW() | Last update time |
+| `min_stock_threshold` | INTEGER | NOT NULL, DEFAULT 0 | Restock trigger |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Product availability |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Record creation time |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last update time |
 
-**Indexes**: category_id, is_active, (category_id, is_active), current_stock, created_at
+**Indexes**: `category_id`, `(current_stock, min_stock_threshold)`, `is_active`
 
 **Relations**:
-- Belongs to: categories
-- Has many: order_items, restock_queue
+- Belongs to: `categories`
+- Has many: `order_items`, `restock_queue`
+
+**Service-layer status rule**:
+- Active product with stock > 0 = available
+- Active product with stock = 0 = out of stock
+- Inactive product = inactive
 
 ---
 
 ### 4. `orders`
-Customer orders.
+Customer order headers.
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| `user_id` | UUID | NOT NULL, FK(users) CASCADE | Order creator |
-| `status` | ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled') | NOT NULL, DEFAULT 'pending' | Order state |
-| `total_amount` | DECIMAL(12,2) | NOT NULL, DEFAULT 0 | Sum of all items |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Order date |
-| `updated_at` | TIMESTAMP | DEFAULT NOW() | Last modification |
+| `user_id` | UUID | NOT NULL, FK(`users.id`) RESTRICT | Order creator |
+| `customer_name` | VARCHAR(120) | NOT NULL, DEFAULT 'Walk-in Customer' | Customer name |
+| `customer_phone` | VARCHAR(30) | NOT NULL, DEFAULT '' | Customer phone |
+| `customer_address` | TEXT | NULLABLE | Delivery address |
+| `delivery_instruction` | TEXT | NULLABLE | Delivery notes |
+| `discount_amount` | DECIMAL(12,2) | NOT NULL, DEFAULT 0 | Discount applied |
+| `total_amount` | DECIMAL(12,2) | NOT NULL, DEFAULT 0 | Final amount |
+| `status` | VARCHAR(30) | NOT NULL, DEFAULT 'pending' | Order state |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Order date |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last modification |
 
-**Indexes**: user_id, status, (status, created_at), created_at
+**Indexes**: `(user_id, created_at)`, `(status, created_at)`
 
 **Relations**:
-- Belongs to: users
-- Has many: order_items
+- Belongs to: `users`
+- Has many: `order_items`
 
-**Lifecycle semantics**: pending -> confirmed -> shipped -> delivered, with cancellation as terminal state when allowed by business rules.
+**Lifecycle**:
+- `pending` -> `confirmed` -> `shipped` -> `delivered`
+- `cancelled` is terminal when business rules allow it
 
 ---
 
 ### 5. `order_items`
-Line items within orders (order ↔ products relationship).
+Line items within orders.
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| `order_id` | UUID | NOT NULL, FK(orders) CASCADE | Parent order |
-| `product_id` | UUID | NOT NULL, FK(products) RESTRICT | Product ordered |
+| `order_id` | UUID | NOT NULL, FK(`orders.id`) CASCADE | Parent order |
+| `product_id` | UUID | NOT NULL, FK(`products.id`) RESTRICT | Product ordered |
 | `quantity` | INTEGER | NOT NULL | Units ordered |
-| `unit_price` | DECIMAL(10,2) | NOT NULL | Price at time of order |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Item creation |
+| `unit_price` | DECIMAL(12,2) | NOT NULL | Price at order time |
+| `line_total` | DECIMAL(12,2) | NOT NULL | `quantity * unit_price` |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Item creation time |
 
-**Indexes**: order_id, product_id, created_at  
-**Unique**: (order_id, product_id) — Only one line item per product per order
+**Indexes**: `order_id`, `product_id`
+
+**Constraints**:
+- Unique `(order_id, product_id)` to prevent duplicate products inside the same order
 
 **Relations**:
-- Belongs to: orders, products
+- Belongs to: `orders`, `products`
 
 ---
 
@@ -117,37 +138,62 @@ Automatic restock requests for low-stock products.
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| `product_id` | UUID | NOT NULL, FK(products) CASCADE | Product to restock |
-| `quantity_needed` | INTEGER | NOT NULL | Units to order |
-| `priority` | ENUM('low', 'medium', 'high') | NOT NULL, DEFAULT 'medium' | Urgency level |
-| `status` | ENUM('pending', 'completed') | NOT NULL, DEFAULT 'pending' | Queue state |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Request creation |
-| `completed_at` | TIMESTAMP | NULLABLE | Fulfillment time |
+| `product_id` | UUID | NOT NULL, FK(`products.id`) CASCADE | Product to restock |
+| `quantity_needed` | INTEGER | NOT NULL | Units required |
+| `priority` | VARCHAR(20) | NOT NULL | `low`, `medium`, or `high` |
+| `status` | VARCHAR(20) | NOT NULL, DEFAULT 'pending' | Queue state |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Request creation time |
+| `completed_at` | TIMESTAMP WITH TIME ZONE | NULLABLE | Fulfillment time |
 
-**Indexes**: product_id, status, priority, (status, priority), created_at
+**Indexes**: `product_id`, `status`, `priority`
+
+**Constraints**:
+- Partial unique index on pending rows so one product cannot have multiple open restock requests
 
 **Relations**:
-- Belongs to: products
+- Belongs to: `products`
 
 ---
 
 ### 7. `activity_logs`
-Audit trail for all actions (immutable).
+Audit trail for user and system actions.
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
-| `user_id` | UUID | NOT NULL, FK(users) CASCADE | Actor |
-| `action` | VARCHAR(50) | NOT NULL | Action type (e.g., 'order_placed', 'stock_updated') |
-| `entity_type` | ENUM('product', 'order', 'stock', 'category') | NOT NULL | What was affected |
-| `entity_id` | UUID | NOT NULL | ID of affected entity |
-| `details` | JSONB | NULLABLE | Extra context (changes, amounts, etc.) |
-| `created_at` | TIMESTAMP | DEFAULT NOW() | Event time |
+| `user_id` | UUID | NULLABLE, FK(`users.id`) SET NULL | Actor; nullable for system events |
+| `action` | TEXT | NOT NULL | Human-readable action |
+| `entity_type` | VARCHAR(50) | NOT NULL | Domain object affected |
+| `entity_id` | UUID | NULLABLE | Affected row identifier |
+| `details` | JSONB | NULLABLE | Additional context |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Event time |
 
-**Indexes**: user_id, action, entity_type, entity_id, created_at, (user_id, created_at)
+**Indexes**: `created_at`, `user_id`, `entity_type`
 
 **Relations**:
-- Belongs to: users
+- Belongs to: `users` when a user is available
+
+---
+
+### 8. `password_reset_requests`
+Forgot-password recovery workflow.
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| `id` | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique identifier |
+| `user_id` | UUID | NOT NULL, FK(`users.id`) CASCADE | Request owner |
+| `email` | VARCHAR(255) | NOT NULL | Email for verification |
+| `otp_code` | VARCHAR(10) | NOT NULL | Generated OTP |
+| `attempt_count` | INTEGER | NOT NULL, DEFAULT 0 | Verification attempts |
+| `verified` | BOOLEAN | NOT NULL, DEFAULT false | OTP verification state |
+| `expires_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | OTP expiry time |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Request creation time |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL, DEFAULT NOW() | Last update time |
+
+**Indexes**: `user_id`, `email`, `expires_at`
+
+**Relations**:
+- Belongs to: `users`
 
 ---
 
@@ -158,32 +204,27 @@ Audit trail for all actions (immutable).
 | `users.email` | UNIQUE | Prevents duplicate login credentials |
 | `categories.name` | UNIQUE | One category per name |
 | `order_items.(order_id, product_id)` | UNIQUE | One line item per product per order |
-| `orders.user_id` → `users.id` | FK CASCADE | Deleting user cascades order deletions |
-| `order_items.order_id` → `orders.id` | FK CASCADE | Deleting order deletes its items |
-| `order_items.product_id` → `products.id` | FK RESTRICT | Cannot delete product if it's in an order |
-| `products.category_id` → `categories.id` | FK RESTRICT | Cannot delete category with products |
-| `restock_queue.product_id` → `products.id` | FK CASCADE | Deleting product clears restock queue |
-| `activity_logs.user_id` → `users.id` | FK CASCADE | Deleting user cascades audit deletions |
+| `products.category_id` → `categories.id` | FK RESTRICT | Prevents deleting a category with products |
+| `orders.user_id` → `users.id` | FK RESTRICT | Prevents deleting a user that owns orders |
+| `order_items.order_id` → `orders.id` | FK CASCADE | Deleting an order deletes its items |
+| `order_items.product_id` → `products.id` | FK RESTRICT | Prevents deleting products used in orders |
+| `restock_queue.product_id` → `products.id` | FK CASCADE | Deleting a product clears restock rows |
+| `activity_logs.user_id` → `users.id` | FK SET NULL | Preserves logs when a user is removed |
+| `password_reset_requests.user_id` → `users.id` | FK CASCADE | Request rows are removed with the user |
 
 ---
 
-## Indexes Strategy
+## Index Strategy
 
-**For Dashboard Queries** (Phase 8):
-- `orders` → (status, created_at) — Filter by status and date range
-- `restock_queue` → (status, priority) — Pending high-priority items
-- `products` → current_stock — Low-stock alerts
-- `activity_logs` → (user_id, created_at) — User activity timeline
+The schema is tuned for dashboard-style reads and operational lookups:
 
-**For Foreign Key Traversal**:
-- `products` → category_id
-- `orders` → user_id
-- `order_items` → (order_id, product_id)
-- `restock_queue` → product_id
-- `activity_logs` → user_id
-
-**For Pagination/Listing**:
-- All tables → created_at
+- `orders(status, created_at)` for recent workflow tracking
+- `orders(user_id, created_at)` for per-user activity views
+- `products(category_id)` for filtering and catalog pages
+- `products(current_stock, min_stock_threshold)` for stock alerts
+- `restock_queue(status, priority)` for queue processing
+- `activity_logs(created_at)` for audit timelines
+- `password_reset_requests(expires_at)` for cleanup and validation
 
 ---
 
@@ -191,61 +232,55 @@ Audit trail for all actions (immutable).
 
 Located in `services/inventory-api/src/database/migrations/`:
 
-1. `001_create_users.ts` — User authentication
-2. `002_create_categories.ts` — Product grouping
-3. `003_create_products.ts` — Inventory items
-4. `004_create_orders.ts` — Order headers
-5. `005_create_order_items.ts` — Order line items
-6. `006_create_restock_queue.ts` — Auto-restock requests
-7. `007_create_activity_logs.ts` — Audit trail
-8. `008_add_is_active_to_categories.ts` — Category active/inactive support
+1. `019_create_users.ts` — Authentication and RBAC users
+2. `020_create_categories.ts` — Category master data
+3. `021_create_products.ts` — Inventory catalog and stock tracking
+4. `022_create_orders.ts` — Order headers and totals
+5. `023_create_order_items.ts` — Order line items
+6. `024_create_restock_queue.ts` — Low-stock restock queue
+7. `025_create_activity_logs.ts` — Audit trail storage
+8. `026_create_password_reset_requests.ts` — OTP reset flow
 
 ### Running Migrations
 
 **Local Development**:
 ```bash
-# Create local PostgreSQL (docker or native) with:
-# CREATE USER dbuser WITH PASSWORD 'dbpass';
-# CREATE DATABASE inventory OWNER dbuser;
-
-# Then run:
 cd services/inventory-api
 npm run migrate:latest
 npm run seed:run
 ```
 
-**Production (Render)**:
+**Production**:
 ```bash
-# Set DATABASE_URL environment variable in Vercel to Render connection string
-# Add migrations to startup script:
 npm run db:setup && npm start
 ```
+
+`db:setup` runs the latest migrations and then the seed pipeline, which is useful when provisioning a brand-new database for the demo dataset.
 
 ---
 
 ## Seed Data
 
-Location: `services/inventory-api/src/database/seeds/01_seed_demo_data.ts`
+Location: `services/inventory-api/src/database/seeds/`
 
-**Demo User**:
-- Email: `demo@inventory.local`
-- Password: `demo123`
-- ID: (auto-generated UUID)
+Seed order:
 
-**Sample Data** (11 products, 4 categories):
-- Electronics: Laptop, Mouse, USB Cable, Monitor
-- Office Supplies: Paper, Pens, Desk Lamp
-- Tools: Drill, Screwdrivers
-- Home & Garden: Office Chair, Potted Plant
+1. `000_truncate_all_tables.ts` clears the tables in dependency order.
+2. `001_seed_users.ts` inserts the four demo users.
+3. `002_seed_categories.ts` inserts the 15 category records.
+4. `003_seed_products.ts` inserts the 49 products and activity logs.
+5. `004_seed_orders.ts` inserts 100 orders, order items, and audit logs.
+6. `005_seed_restock_queue.ts` inserts queue items for low-stock products.
 
-**Sample Orders** (3 completed/pending):
-- Day 3 ago (completed): Laptop + Mouse
-- Yesterday (pending): 3× Monitor + USB Cable
-- Today (pending): 50× Pens
+Shared fixtures live in `services/inventory-api/src/database/seed-data/index.ts`.
 
-**Restock Queue** (5 pending):
-- High priority: Wireless Mouse, Monitor, A4 Paper
-- Medium priority: Desk Lamp, Potted Plant
+### Demo Dataset
+
+- 4 users
+- 15 categories
+- 49 products
+- 100 orders over the last 30 days
+- low-stock restock queue rows and related activity logs
 
 ---
 
@@ -258,80 +293,15 @@ Location: `services/inventory-api/src/database/seeds/01_seed_demo_data.ts`
 - Connection timeout: 2,000ms
 - SSL: false
 
-**Production** (Render):
+**Production**:
 - Min: 2 connections
-- Max: 10 connections
-- Idle timeout: 30,000ms
-- Connection timeout: 2,000ms
-- SSL: true (required)
+- Max: 20 connections
+- Idle timeout: 60,000ms
+- Connection timeout: 5,000ms
+- SSL: true
 
 ---
 
-## Performance Considerations
+## Reset Behavior
 
-1. **Composite Indexes**: `(status, created_at)` on orders for dashboard queries
-2. **Foreign Key Constraints**: RESTRICT on products (prevent accidental deletion) vs CASCADE on orders (natural cleanup)
-3. **JSONB for Flexibility**: activity_logs.details stores dynamic change data
-4. **UUID for Scalability**: Distributed IDs, no coordination needed
-5. **Timestamps**: All tables timestamped for audit trail
-
----
-
-## Example Queries
-
-### Dashboard Metrics
-```sql
--- Orders placed today
-SELECT COUNT(*) FROM orders WHERE DATE(created_at) = CURRENT_DATE;
-
--- Pending orders count
-SELECT COUNT(*) FROM orders WHERE status = 'pending';
-
--- Low-stock products
-SELECT * FROM products WHERE current_stock < min_stock_threshold AND is_active;
-
--- Restock queue pending count
-SELECT COUNT(*) FROM restock_queue WHERE status = 'pending';
-```
-
-### User Activity
-```sql
--- Last 10 actions by user
-SELECT * FROM activity_logs 
-WHERE user_id = $1 
-ORDER BY created_at DESC 
-LIMIT 10;
-```
-
-### Order Analytics
-```sql
--- Total revenue (completed orders)
-SELECT SUM(total_amount) FROM orders WHERE status = 'completed';
-
--- Products in orders per category
-SELECT c.name, COUNT(p.id) 
-FROM products p
-JOIN categories c ON p.category_id = c.id
-JOIN order_items oi ON p.id = oi.product_id
-GROUP BY c.id, c.name;
-```
-
----
-
-## Maintenance
-
-**Regular Tasks**:
-- Analyze tables: `ANALYZE products, orders, restock_queue;`
-- Vacuum: `VACUUM ANALYZE activity_logs;` (for audit table log cleanup)
-- Reindex: `REINDEX INDEX idx_orders_status_created; ` (if slowdown detected)
-
-**Render PostgreSQL Console** (Admin):
-- Monitor connection count (avoid max: 10)
-- Check query logs for slow queries
-- Backup daily (Render handles automatically)
-
----
-
-**Schema Version**: 1.0  
-**Created**: March 30, 2026  
-**Database Compatibility**: PostgreSQL 16+
+Migrations change schema only. Seeds change data only. If the database already contains rows, running `migrate:latest` will not remove them. Run the seed pipeline after migrations when you need the demo dataset reset from scratch.

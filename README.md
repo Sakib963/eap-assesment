@@ -2,7 +2,7 @@
 
 A comprehensive full-stack web application for managing products, inventories, customer orders, and intelligent restock workflows with real-time status tracking and conflict prevention.
 
-**Status**: Production Ready | **Version**: 1.0.0
+**Status**: Production Ready | **Version**: 1.1.0
 
 ---
 
@@ -15,8 +15,9 @@ A comprehensive full-stack web application for managing products, inventories, c
 5. [Running the Application](#running-the-application)
 6. [API Documentation](#api-documentation)
 7. [Database Schema](#database-schema)
-8. [Deployment Guide](#deployment-guide)
-9. [Development Workflow](#development-workflow)
+8. [Migrations & Seeds](#migrations--seeds)
+9. [Deployment Guide](#deployment-guide)
+10. [Development Workflow](#development-workflow)
 
 ---
 
@@ -59,10 +60,11 @@ A comprehensive full-stack web application for managing products, inventories, c
 - Latest 10 entries displayed on demand
 
 ### 6. **Dashboard & Analytics**
-- Real-time KPI summary: Orders Today, Pending Orders, Low Stock Count, Revenue
-- Daily analytics chart (bar chart visualization of metrics)
+- Real-time KPI summary: Orders Today, Pending Orders, Completed Orders, Low Stock Count, Revenue
+- Daily analytics chart (bar chart visualization of operational metrics)
+- Operational insight cards for completion rate, average order value, and stock risk
 - Low stock alert table with priority indicators
-- Role-scoped metrics (Salesmen see their sales data only)
+- Role-scoped metrics and actions (Managers vs Salesmen)
 
 ---
 
@@ -141,13 +143,13 @@ A comprehensive full-stack web application for managing products, inventories, c
 │  PostgreSQL 16 on Render                                         │
 │  ├── users (id, email, password_hash, name, phone, role, status)│
 │  ├── categories (id, name, description)                         │
-│  ├── products (id, name, category_id, price, stock, threshold)  │
-│  ├── orders (id, customer_name, phone, items, status)           │
-│  ├── order_items (id, order_id, product_id, qty, unit_price)    │
-│  ├── restock_queue (id, product_id, priority, status)           │
-│  ├── activity_logs (id, user_id, action, entity_type, entity_id)│
-│  ├── password_reset_requests (id, email, otp_code, verified)    │
-│  └── Migrations: 18 versioned SQL files (Knex)                  │
+│  ├── products (id, name, category_id, price, current_stock, threshold, is_active) │
+│  ├── orders (id, user_id, customer_name, customer_phone, status, total_amount)     │
+│  ├── order_items (id, order_id, product_id, quantity, unit_price, line_total)      │
+│  ├── restock_queue (id, product_id, quantity_needed, priority, status)             │
+│  ├── activity_logs (id, user_id, action, entity_type, entity_id, details)          │
+│  ├── password_reset_requests (id, user_id, email, otp_code, verified)              │
+│  └── Migrations: 019-026 clean rebuild migrations (Knex)                           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -187,7 +189,7 @@ EOF
 npm run migrate:latest
 
 # Seed database with demo data (optional)
-npm run seed
+npm run seed:run
 ```
 
 ### **Step 3: Frontend Setup**
@@ -239,6 +241,47 @@ npm start
 cd services/inventory-web
 npm run build
 # Build output: dist/frontend/
+
+## 🧱 Migrations & Seeds
+
+### Migration Layout
+
+The API uses standard Knex migrations in `services/inventory-api/src/database/migrations/`.
+
+Current clean schema files:
+- `019_create_users.ts`
+- `020_create_categories.ts`
+- `021_create_products.ts`
+- `022_create_orders.ts`
+- `023_create_order_items.ts`
+- `024_create_restock_queue.ts`
+- `025_create_activity_logs.ts`
+- `026_create_password_reset_requests.ts`
+
+### Seed Layout
+
+Seed files are split by concern in `services/inventory-api/src/database/seeds/`:
+- `000_truncate_all_tables.ts` removes existing data
+- `001_seed_users.ts`
+- `002_seed_categories.ts`
+- `003_seed_products.ts`
+- `004_seed_orders.ts`
+- `005_seed_restock_queue.ts`
+
+Shared seed fixtures live in `services/inventory-api/src/database/seed-data/index.ts`.
+
+### Seeded Demo Data
+
+The seed set now creates:
+- 4 users
+- 15 categories
+- 49 products
+- 100 orders over the last 30 days
+- related order items, restock queue rows, and activity logs
+
+### Important Note
+
+Running migrations does not automatically clear old rows in a live database. The `000_truncate_all_tables.ts` seed is what resets data before inserting the demo set. If you want a fully fresh dataset, run both migration and seed steps in sequence.
 ```
 
 ---
@@ -373,102 +416,65 @@ GET /api/v1/activity?limit=10
 
 ## 🗄️ Database Schema
 
-### **users**
-```sql
-CREATE TABLE users (
-  id UUID PRIMARY KEY,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  phone VARCHAR(20),
-  role 'manager' | 'salesman' DEFAULT 'salesman',
-  status 'active' | 'inactive' DEFAULT 'active',
-  created_by VARCHAR(255),
-  updated_by VARCHAR(255),
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
-```
+The API now uses eight versioned tables backed by Knex migrations. The schema is intentionally split into per-domain files so the history stays readable and migration ordering stays predictable on an existing database.
 
-### **categories**
-```sql
-CREATE TABLE categories (
-  id UUID PRIMARY KEY,
-  name VARCHAR(100) UNIQUE NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
-```
+### Core Tables
 
-### **products**
-```sql
-CREATE TABLE products (
-  id UUID PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  category_id UUID FOREIGN KEY REFERENCES categories,
-  description TEXT,
-  price DECIMAL(10,2) NOT NULL,
-  current_stock INT DEFAULT 0,
-  min_stock_threshold INT DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
--- Status is derived: ACTIVE = is_active AND stock > 0
---                    OUT_OF_STOCK = is_active AND stock = 0
---                    INACTIVE = NOT is_active
-```
+- `users`: auth identity, role, status, and audit metadata.
+- `categories`: product grouping with an active flag.
+- `products`: category link, stock counters, pricing, and activity state.
+- `orders`: customer order header with totals and workflow status.
+- `order_items`: order line items with quantity, unit price, and line total.
+- `restock_queue`: low-stock work queue with priority and completion tracking.
+- `activity_logs`: immutable operational audit trail with JSONB details.
+- `password_reset_requests`: OTP-backed forgot-password workflow with expiry and verification state.
 
-### **orders**
-```sql
-CREATE TABLE orders (
-  id UUID PRIMARY KEY,
-  user_id UUID FOREIGN KEY REFERENCES users,
-  customer_name VARCHAR(255) NOT NULL,
-  customer_phone VARCHAR(20) NOT NULL,
-  customer_address TEXT,
-  delivery_instruction TEXT,
-  discount_amount DECIMAL(10,2) DEFAULT 0,
-  subtotal_amount DECIMAL(10,2) NOT NULL,
-  total_amount DECIMAL(10,2) NOT NULL,
-  status 'pending'|'confirmed'|'shipped'|'delivered'|'cancelled' DEFAULT 'pending',
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);
-```
+### Schema Notes
 
-### **restock_queue**
-```sql
-CREATE TABLE restock_queue (
-  id UUID PRIMARY KEY,
-  product_id UUID FOREIGN KEY REFERENCES products,
-  quantity_needed INT NOT NULL,
-  priority 'low'|'medium'|'high',
-  status 'pending'|'completed' DEFAULT 'pending',
-  current_stock INT,
-  min_stock_threshold INT,
-  created_at TIMESTAMP,
-  completed_at TIMESTAMP
-);
--- Priority: HIGH = stock ≤ 0
---           MEDIUM = stock ≤ 50% of threshold
---           LOW = stock > 50% of threshold
-```
+- `products.status` is derived in the service layer from `is_active` and `current_stock`.
+- `order_items` uses a unique `(order_id, product_id)` constraint to keep each product to one line item per order.
+- `restock_queue` keeps one pending request per product with a partial unique index.
+- `activity_logs.user_id` is nullable so system-generated events can be recorded without a user.
 
-### **activity_logs**
-```sql
-CREATE TABLE activity_logs (
-  id UUID PRIMARY KEY,
-  user_id UUID FOREIGN KEY REFERENCES users,
-  action VARCHAR(100) NOT NULL,
-  entity_type VARCHAR(50) NOT NULL,
-  entity_id UUID,
-  old_value TEXT,
-  new_value TEXT,
-  created_at TIMESTAMP
-);
-```
+### Migration Layout
+
+The current migration set lives in `services/inventory-api/src/database/migrations/`:
+
+- `019_create_users.ts`
+- `020_create_categories.ts`
+- `021_create_products.ts`
+- `022_create_orders.ts`
+- `023_create_order_items.ts`
+- `024_create_restock_queue.ts`
+- `025_create_activity_logs.ts`
+- `026_create_password_reset_requests.ts`
+
+### Seed Layout
+
+The seed pipeline is split by concern in `services/inventory-api/src/database/seeds/`:
+
+- `000_truncate_all_tables.ts`
+- `001_seed_users.ts`
+- `002_seed_categories.ts`
+- `003_seed_products.ts`
+- `004_seed_orders.ts`
+- `005_seed_restock_queue.ts`
+
+Shared fixtures live in `services/inventory-api/src/database/seed-data/index.ts`.
+
+### Seeded Demo Data
+
+The demo dataset now creates:
+
+- 4 users
+- 15 categories
+- 49 products
+- 100 orders across the last 30 days
+- related order items, restock queue rows, and activity logs
+
+### Reset Flow
+
+Running a migration does not clear existing rows in PostgreSQL. If you want a fresh demo state, run the schema migration first and then run the seed pipeline so `000_truncate_all_tables.ts` can reset the tables before the demo data is inserted.
 
 ---
 
@@ -544,8 +550,8 @@ eap-assesment/
 │   │   │   ├── schemas/ (Zod validation)
 │   │   │   ├── middleware/ (Auth, Error, Validation)
 │   │   │   ├── database/
-│   │   │   │   ├── migrations/ (SQL versioning)
-│   │   │   │   ├── seeds/ (Demo data)
+│   │   │   │   ├── migrations/ (versioned schema)
+│   │   │   │   ├── seeds/ (structured demo data)
 │   │   │   │   └── helpers.ts (Query helpers)
 │   │   │   ├── types/
 │   │   │   └── utils/
@@ -647,7 +653,7 @@ eap-assesment/
 
 - **Demo Account**: Email: `demo@inventory.local` | Password: `demo123`
 - **OTP for Forgot Password**: Default is `1234` (demo/dev only)
-- **Database Migration**: Run `npm run migrate:latest` after pulling schema changes
+- **Database Reset**: Run `npm run migrate:latest` and `npm run seed:run` when you need a clean demo dataset
 - **Error Messages**: Backend sends user-friendly messages; frontend properly displays them
 - **Charts**: Dashboard includes Chart.js visualization of daily metrics
 

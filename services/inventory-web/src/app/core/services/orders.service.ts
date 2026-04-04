@@ -4,6 +4,7 @@ import { Observable, catchError, map, throwError } from 'rxjs';
 import type { ApiResponse } from '../models/api.model';
 import type { PaginatedResponse } from '../models/catalog.model';
 import type {
+  ActivityLogListParams,
   ActivityLogEntry,
   CreateOrderPayload,
   DashboardMetrics,
@@ -68,9 +69,9 @@ export class OrdersService {
       .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
   }
 
-  getActivityLogs(limit = 10): Observable<ActivityLogEntry[]> {
+  getActivityLogs(params: ActivityLogListParams = {}): Observable<PaginatedResponse<ActivityLogEntry>> {
     return this.api
-      .getWrapped<ActivityLogEntry[]>('/api/v1/activity-logs', { limit })
+      .getWrapped<PaginatedResponse<ActivityLogEntry>>('/api/v1/activity-logs', params)
       .pipe(map((response) => this.unwrap(response)), catchError((error) => this.handleApiError(error)));
   }
 

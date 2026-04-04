@@ -76,6 +76,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       { label: 'Completed Orders', value: m.completed_orders, suffix: '' },
       { label: 'Low Stock Items', value: m.low_stock_count, suffix: '' },
       { label: 'Revenue Today', value: m.revenue_today.toFixed(2), suffix: '$' },
+      { label: 'Completion Rate', value: `${this.completionRate()}%`, suffix: '' },
     ];
   });
 
