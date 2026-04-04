@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://your-api.vercel.app/api/v1',
+  apiBaseUrl: 'https://eap-assesment.vercel.app/',
 };
