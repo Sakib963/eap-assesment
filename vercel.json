@@ -1,19 +1,14 @@
 {
   "version": 2,
-  "buildCommand": "npm run build --prefix services/inventory-api",
-  "env": {
-    "NODE_ENV": "production",
-    "PORT": "3000"
-  },
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "services/inventory-api/dist/services/inventory-api/src/server.js"
-    }
-  ],
   "functions": {
-    "services/inventory-api/dist/services/inventory-api/src/server.js": {
+    "api/index.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index"
+    }
+  ]
 }
