@@ -1,0 +1,12 @@
+{
+  "name": "eap-assesment-monorepo",
+  "private": true,
+  "workspaces": [
+    "services/inventory-api",
+    "services/inventory-web"
+  ],
+  "scripts": {
+    "build:api": "npm run build --workspace services/inventory-api",
+    "build:web": "npm run build --workspace services/inventory-web"
+  }
+}
